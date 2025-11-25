@@ -6,18 +6,16 @@ export const systemRoutes: AppRouteRecord = {
   component: '/index/index',
   meta: {
     title: 'menus.system.title',
-    icon: 'ri:user-3-line',
-    roles: ['R_SUPER', 'R_ADMIN']
+    icon: 'ri:user-3-line'
   },
   children: [
     {
-      path: 'user',
-      name: 'User',
-      component: '/system/user',
+      path: 'department',
+      name: 'Department',
+      component: '/system/department',
       meta: {
-        title: 'menus.system.user',
-        keepAlive: true,
-        roles: ['R_SUPER', 'R_ADMIN']
+        title: 'menus.system.department',
+        keepAlive: true
       }
     },
     {
@@ -26,8 +24,34 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/role',
       meta: {
         title: 'menus.system.role',
-        keepAlive: true,
-        roles: ['R_SUPER']
+        keepAlive: true
+      }
+    },
+    {
+      path: 'user',
+      name: 'User',
+      component: '/system/user',
+      meta: {
+        title: 'menus.system.user',
+        keepAlive: true
+      }
+    },
+    {
+      path: 'area',
+      name: 'Area',
+      component: '/system/area',
+      meta: {
+        title: 'menus.system.area',
+        keepAlive: true
+      }
+    },
+    {
+      path: 'device',
+      name: 'Device',
+      component: '/system/device',
+      meta: {
+        title: 'menus.system.device',
+        keepAlive: true
       }
     },
     {
@@ -40,21 +64,21 @@ export const systemRoutes: AppRouteRecord = {
         keepAlive: true,
         isHideTab: true
       }
-    },
-    {
-      path: 'menu',
-      name: 'Menus',
-      component: '/system/menu',
-      meta: {
-        title: 'menus.system.menu',
-        keepAlive: true,
-        roles: ['R_SUPER'],
-        authList: [
-          { title: '新增', authMark: 'add' },
-          { title: '编辑', authMark: 'edit' },
-          { title: '删除', authMark: 'delete' }
-        ]
-      }
     }
+    // {
+    //   path: 'menu',
+    //   name: 'Menus',
+    //   component: '/system/menu',
+    //   meta: {
+    //     title: 'menus.system.menu',
+    //     keepAlive: true,
+    //     roles: ['R_SUPER'],
+    //     authList: [
+    //       { title: '新增', authMark: 'add' },
+    //       { title: '编辑', authMark: 'edit' },
+    //       { title: '删除', authMark: 'delete' }
+    //     ]
+    //   }
+    // }
   ]
 }

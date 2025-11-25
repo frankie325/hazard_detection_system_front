@@ -238,10 +238,30 @@
     },
     "system": {
       "title": "系统管理",
+      "department": "部门管理",
+      "area": "区域管理",
+      "device": "设备管理",
       "user": "用户管理",
       "role": "角色管理",
       "userCenter": "个人中心",
       "menu": "菜单管理"
+    },
+    "detect": {
+      "title": "危害检测",
+      "deviceMonitor": "设备监控",
+      "events": "事件流"
+    },
+    "warning": {
+      "title": "告警管理",
+      "rule": "告警规则",
+      "message": "告警消息",
+      "messageDetail": "告警消息详情"
+    },
+    "emergency": {
+      "title": "应急管理",
+      "eventCenter": "事件中心",
+      "resourceBind": "资源绑定",
+      "report": "报告复盘"
     }
   },
   "table": {
