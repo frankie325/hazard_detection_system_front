@@ -238,10 +238,30 @@
     },
     "system": {
       "title": "System Settings",
+      "department": "Department Manage",
+      "area": "Area Manage",
+      "device": "Device Manage",
       "user": "User Manage",
       "role": "Role Manage",
       "userCenter": "User Center",
       "menu": "Menu Manage"
+    },
+    "detect": {
+      "title": "Detect",
+      "deviceMonitor": "Device Monitor",
+      "events": "Device Events"
+    },
+    "warning": {
+      "title": "Warning",
+      "rule": "Warning Rule",
+      "message": "Warning Message",
+      "messageDetail": "Warning Message Detail"
+    },
+    "emergency": {
+      "title": "Emergency",
+      "eventCenter": "Event Center",
+      "resourceBind": "Resource Bind",
+      "report": "Report Recorder"
     }
   },
   "table": {
