@@ -1,0 +1,12 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-01-26T08:47:02.682Z
+provider: 
+---
+
+1. 中文回复
+2. 之前完成正确的功能，尽量不要修改
+3. 生成的注释用中文，并使用 UTF-8 编码
+4. 没有明确说明则不需要写测试脚本
