@@ -1,0 +1,24 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-01-26T08:44:14.000Z
+provider: 
+---
+
+## 基本格式要求
+优先参考prettier的配置
+- **分号**：语句末尾必须添加分号
+
+## React/Vue特定规范
+- 组件命名使用PascalCase（大驼峰）：如`UserProfileCard`
+- 变量命名使用camelCase（小驼峰）：如`userName`
+- 常量命名使用UPPER_SNAKE_CASE：如`API_BASE_URL`
+
+## 注释规范
+- 函数注释使用JSDoc格式
+- 复杂逻辑必须添加行内注释
+- TODO注释需标明负责人和日期：`// TODO: [段码] 2025-11-04 优化性能`
+
+## 导入导出规范
+- 导入语句按以下顺序分组：内置模块 → 外部依赖 → 相对路径
