@@ -23,3 +23,28 @@ export function fetchGetMenuList() {
     url: '/api/v3/system/menus/simple'
   })
 }
+
+// 获取部门列表
+export function departmentList(params?: Api.Common.CommonSearchParams) {
+  return request.get<Api.SystemManage.DepartmentList>({
+    url: '/sys/dept/list',
+    params
+  })
+}
+// // 编辑部门
+// export function fetchUpdateDepartment(data: Api.SystemManage.DepartmentForm, config?: AxiosRequestConfig) {
+//   return request.put('/api/system/department', data, config)
+// }
+
+// // 删除部门
+// export function fetchDeleteDepartment(id: string, config?: AxiosRequestConfig) {
+//   return request.delete(`/api/system/department/${id}`, config)
+// }
+
+// // 批量删除部门
+// export function fetchBatchDeleteDepartment(ids: string[], config?: AxiosRequestConfig) {
+//   return request.delete('/api/system/department/batch', {
+//     data: { ids },
+//     ...config
+//   })
+// }
