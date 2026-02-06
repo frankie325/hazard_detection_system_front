@@ -82,6 +82,21 @@ declare namespace Api {
       userName: string
       email: string
       avatar?: string
+
+      // 用户信息
+      id: number
+      idCard: string
+      name: string // 真实姓名
+      username: string // 用户名
+      phone: string
+      gender: string
+      remark: string
+      roleId: number
+      roleName: string
+      deptId: number
+      deptName: string
+      createTime: string
+      updateTime: string
     }
   }
 
@@ -113,6 +128,32 @@ declare namespace Api {
         Api.Common.CommonSearchParams
     >
 
+    // 部门列表
+    type DepartmentList = Api.Common.PaginatedResponse<DepartmentListItem>
+
+    /** 部门列表项 */
+    interface DepartmentListItem {
+      id: number
+      parentId: number
+      deptName: string
+      deptCode: string
+      description?: string
+      status: string
+      createTime: string
+      updateTime: string
+      children: DepartmentListItem[]
+      parentDepartmentName?: string
+      hasChildren?: boolean
+      _level?: number
+    }
+
+    /** 部门表单 */
+    interface DepartmentForm {
+      deptName: string
+      parentDepartmentId: string | number
+      deptCode: string
+      description: string
+    }
     /** 角色列表 */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>
 
