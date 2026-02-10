@@ -121,6 +121,7 @@
       if (newVal) {
         if (props.type === 'edit' && props.departmentData) {
           formData.value = { ...props.departmentData } as Api.SystemManage.DepartmentForm
+          if (props.departmentData.parentId === 0) formData.value.parentId = undefined
         } else {
           formData.value = {
             id: undefined,

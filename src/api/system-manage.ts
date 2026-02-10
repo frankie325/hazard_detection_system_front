@@ -42,24 +42,31 @@ export function departmentAdd(data?: Api.SystemManage.DepartmentForm) {
 
 // 根据id获取部门详情
 export function departmentGetById(id: number) {
-  return request.post<Api.SystemManage.DepartmentList>({
+  return request.get<Api.SystemManage.DepartmentListItem>({
     url: `/sys/dept/${id}`
   })
 }
 
 // 更新部门
 export function departmentUpdate(data?: Api.SystemManage.DepartmentForm) {
-  return request.put<Api.SystemManage.DepartmentList>({
+  return request.put({
     url: '/sys/dept/update',
     data
   })
 }
 
+// 删除单个部门
+export function departmentDeleteById(id: number) {
+  return request.del({
+    url: `/sys/dept/delete/${id}`
+  })
+}
+
 // 批量删除部门
-export function departmentBatchDelete(data?: number[]) {
-  return request.put<Api.SystemManage.DepartmentList>({
+export function departmentBatchDelete(ids?: number[]) {
+  return request.del({
     url: '/sys/dept/batchDelete',
-    data
+    data: ids
   })
 }
 

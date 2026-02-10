@@ -33,6 +33,7 @@
       <ArtTable
         :loading="loading"
         row-key="id"
+        default-expand-all
         :data="data"
         :columns="columns"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
@@ -55,7 +56,11 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { departmentTreeList } from '@/api/system-manage'
+  import {
+    departmentTreeList,
+    departmentDeleteById,
+    departmentBatchDelete
+  } from '@/api/system-manage'
   import DepartmentSearch from './modules/department-search.vue'
   import DepartmentDialog from './modules/department-dialog.vue'
   import { ElMessageBox, ElMessage } from 'element-plus'
@@ -135,7 +140,7 @@
               }),
               h(ArtButtonTable, {
                 type: 'delete',
-                onClick: () => deleteDepartment()
+                onClick: () => deleteDepartment(row)
               })
             ])
         }
@@ -192,15 +197,20 @@
   /**
    * 删除部门
    */
-  const deleteDepartment = () => {
+  const deleteDepartment = (row: DepartmentListItem): void => {
     ElMessageBox.confirm(`确定要删除该部门吗？删除后不可恢复!`, '确认删除', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
-    }).then(() => {
-      // TODO: 调用删除接口
-      ElMessage.success('删除成功')
-      refreshData()
+    }).then(async () => {
+      try {
+        await departmentDeleteById(row.id)
+        ElMessage.success('删除成功')
+        refreshData()
+      } catch (error) {
+        console.error('删除失败:', error)
+        ElMessage.error('删除失败，请重试')
+      }
     })
   }
 
@@ -222,11 +232,17 @@
         cancelButtonText: '取消',
         type: 'warning'
       }
-    ).then(() => {
-      // TODO: 调用批量删除接口
-      ElMessage.success(`已成功删除 ${selectedRows.value.length} 个部门`)
-      selectedRows.value = []
-      refreshData()
+    ).then(async () => {
+      try {
+        const ids = selectedRows.value.map((item) => item.id)
+        await departmentBatchDelete(ids)
+        ElMessage.success(`已成功删除 ${selectedRows.value.length} 个部门`)
+        selectedRows.value = []
+        refreshData()
+      } catch (error) {
+        console.error('批量删除失败:', error)
+        ElMessage.error('批量删除失败，请重试')
+      }
     })
   }
 
