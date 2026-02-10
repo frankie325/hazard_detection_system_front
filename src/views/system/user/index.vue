@@ -45,7 +45,7 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetUserList } from '@/api/system-manage'
+  // import { fetchGetUserList } from '@/api/system-manage'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
@@ -107,7 +107,240 @@
   } = useTable({
     // 核心配置
     core: {
-      apiFn: fetchGetUserList,
+      apiFn: async (params) => {
+        // 模拟 API 延迟
+        await new Promise((resolve) => setTimeout(resolve, 300))
+
+        // 假数据
+        const mockData: Api.SystemManage.UserListItem[] = [
+          {
+            id: 1,
+            userName: '张三',
+            userGender: '男',
+            userPhone: '13800138001',
+            userEmail: 'zhangsan@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
+            deptId: 1,
+            deptName: '技术部',
+            createTime: '2024-01-01 10:00:00',
+            updateTime: '2024-03-15 14:30:00'
+          },
+          {
+            id: 2,
+            userName: '李四',
+            userGender: '女',
+            userPhone: '13800138002',
+            userEmail: 'lisi@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
+            deptId: 2,
+            deptName: '产品部',
+            createTime: '2024-01-02 09:15:00',
+            updateTime: '2024-03-14 16:45:00'
+          },
+          {
+            id: 3,
+            userName: '王五',
+            userGender: '男',
+            userPhone: '13800138003',
+            userEmail: 'wangwu@example.com',
+            status: '2',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
+            deptId: 1,
+            deptName: '技术部',
+            createTime: '2024-01-03 14:20:00',
+            updateTime: '2024-03-13 10:20:00'
+          },
+          {
+            id: 4,
+            userName: '赵六',
+            userGender: '女',
+            userPhone: '13800138004',
+            userEmail: 'zhaoliu@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
+            deptId: 3,
+            deptName: '市场部',
+            createTime: '2024-01-04 11:30:00',
+            updateTime: '2024-03-12 15:50:00'
+          },
+          {
+            id: 5,
+            userName: '孙七',
+            userGender: '男',
+            userPhone: '13800138005',
+            userEmail: 'sunqi@example.com',
+            status: '3',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
+            deptId: 4,
+            deptName: '财务部',
+            createTime: '2024-01-05 16:40:00',
+            updateTime: '2024-03-11 09:35:00'
+          },
+          {
+            id: 6,
+            userName: '周八',
+            userGender: '女',
+            userPhone: '13800138006',
+            userEmail: 'zhouba@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=6',
+            deptId: 2,
+            deptName: '产品部',
+            createTime: '2024-01-06 13:50:00',
+            updateTime: '2024-03-10 17:25:00'
+          },
+          {
+            id: 7,
+            userName: '吴九',
+            userGender: '男',
+            userPhone: '13800138007',
+            userEmail: 'wujiu@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=7',
+            deptId: 1,
+            deptName: '技术部',
+            createTime: '2024-01-07 10:15:00',
+            updateTime: '2024-03-09 14:10:00'
+          },
+          {
+            id: 8,
+            userName: '郑十',
+            userGender: '女',
+            userPhone: '13800138008',
+            userEmail: 'zhengshi@example.com',
+            status: '4',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=8',
+            deptId: 3,
+            deptName: '市场部',
+            createTime: '2024-01-08 15:25:00',
+            updateTime: '2024-03-08 11:45:00'
+          },
+          {
+            id: 9,
+            userName: '陈小明',
+            userGender: '男',
+            userPhone: '13800138009',
+            userEmail: 'chenxiaoming@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=9',
+            deptId: 5,
+            deptName: '人力资源部',
+            createTime: '2024-01-09 09:40:00',
+            updateTime: '2024-03-07 16:20:00'
+          },
+          {
+            id: 10,
+            userName: '林小红',
+            userGender: '女',
+            userPhone: '13800138010',
+            userEmail: 'linxiaohong@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=10',
+            deptId: 4,
+            deptName: '财务部',
+            createTime: '2024-01-10 14:55:00',
+            updateTime: '2024-03-06 10:30:00'
+          },
+          {
+            id: 11,
+            userName: '黄小刚',
+            userGender: '男',
+            userPhone: '13800138011',
+            userEmail: 'huangxiaogang@example.com',
+            status: '2',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=11',
+            deptId: 1,
+            deptName: '技术部',
+            createTime: '2024-01-11 11:10:00',
+            updateTime: '2024-03-05 15:15:00'
+          },
+          {
+            id: 12,
+            userName: '刘小丽',
+            userGender: '女',
+            userPhone: '13800138012',
+            userEmail: 'liuxiaoli@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=12',
+            deptId: 2,
+            deptName: '产品部',
+            createTime: '2024-01-12 16:30:00',
+            updateTime: '2024-03-04 09:55:00'
+          },
+          {
+            id: 13,
+            userName: '马小龙',
+            userGender: '男',
+            userPhone: '13800138013',
+            userEmail: 'maxiaolong@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=13',
+            deptId: 3,
+            deptName: '市场部',
+            createTime: '2024-01-13 13:45:00',
+            updateTime: '2024-03-03 17:40:00'
+          },
+          {
+            id: 14,
+            userName: '王小芳',
+            userGender: '女',
+            userPhone: '13800138014',
+            userEmail: 'wangxiaofang@example.com',
+            status: '3',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=14',
+            deptId: 5,
+            deptName: '人力资源部',
+            createTime: '2024-01-14 10:00:00',
+            updateTime: '2024-03-02 14:25:00'
+          },
+          {
+            id: 15,
+            userName: '张小龙',
+            userGender: '男',
+            userPhone: '13800138015',
+            userEmail: 'zhangxiaolong@example.com',
+            status: '1',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=15',
+            deptId: 1,
+            deptName: '技术部',
+            createTime: '2024-01-15 15:20:00',
+            updateTime: '2024-03-01 11:50:00'
+          }
+        ]
+
+        // 过滤逻辑
+        let filteredData = mockData
+        if (params.userName) {
+          filteredData = filteredData.filter((item) => item.userName.includes(params.userName))
+        }
+        if (params.userPhone) {
+          filteredData = filteredData.filter((item) => item.userPhone.includes(params.userPhone))
+        }
+        if (params.userEmail) {
+          filteredData = filteredData.filter((item) => item.userEmail.includes(params.userEmail))
+        }
+        if (params.userGender) {
+          filteredData = filteredData.filter((item) => item.userGender === params.userGender)
+        }
+        if (params.status) {
+          filteredData = filteredData.filter((item) => item.status === params.status)
+        }
+
+        // 分页逻辑
+        const total = filteredData.length
+        const start = (params.current - 1) * params.size
+        const end = start + params.size
+        const records = filteredData.slice(start, end)
+
+        return {
+          records,
+          current: params.current,
+          size: params.size,
+          total
+        }
+      },
       apiParams: {
         current: 1,
         size: 20,

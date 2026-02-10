@@ -112,13 +112,15 @@ declare namespace Api {
       status: string
       userName: string
       userGender: string
-      nickName: string
+      // nickName: string
       userPhone: string
       userEmail: string
-      userRoles: string[]
-      createBy: string
+      // userRoles: string[]
+      deptId: number
+      deptName: string
+      // createBy: string
       createTime: string
-      updateBy: string
+      // updateBy: string
       updateTime: string
     }
 
@@ -166,6 +168,7 @@ declare namespace Api {
       description: string
       enabled: boolean
       createTime: string
+      updateTime: string
     }
 
     /** 角色搜索参数 */
