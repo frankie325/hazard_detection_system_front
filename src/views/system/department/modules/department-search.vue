@@ -1,75 +1,65 @@
 <template>
-  <div class="department-search">
-    <ElForm :model="form" ref="formRef" :inline="true">
-      <ElFormItem label="部门名称" prop="departmentName">
-        <ElInput
-          v-model="form.departmentName"
-          placeholder="请输入部门名称"
-          clearable
-          @keyup.enter="handleSearch"
-        />
-      </ElFormItem>
-      <ElFormItem label="状态" prop="status">
-        <ElSelect v-model="form.status" placeholder="请选择状态" clearable>
-          <ElOption label="全部" :value="''" />
-          <ElOption label="正常" :value="'1'" />
-          <ElOption label="禁用" :value="'0'" />
-        </ElSelect>
-      </ElFormItem>
-      <ElFormItem>
-        <ElButton type="primary" @click="handleSearch">搜索</ElButton>
-        <ElButton @click="handleReset">重置</ElButton>
-      </ElFormItem>
-    </ElForm>
-  </div>
+  <ArtSearchBar
+    ref="searchBarRef"
+    v-model="formData"
+    :items="formItems"
+    :rules="rules"
+    @reset="handleReset"
+    @search="handleSearch"
+  >
+  </ArtSearchBar>
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from 'vue'
-  import { ElForm } from 'element-plus'
+  interface Props {
+    modelValue: Record<string, any>
+  }
+  interface Emits {
+    (e: 'update:modelValue', value: Record<string, any>): void
+    (e: 'search', params: Record<string, any>): void
+    (e: 'reset'): void
+  }
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
 
-  const emits = defineEmits(['search', 'reset'])
-
-  const formRef = ref<InstanceType<typeof ElForm>>()
-  const form = ref({
-    departmentName: undefined,
-    status: '1'
+  // 表单数据双向绑定
+  const searchBarRef = ref()
+  const formData = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
   })
 
-  /**
-   * 搜索处理
-   */
-  const handleSearch = () => {
-    emits('search', form.value)
+  // 校验规则
+  const rules = {
+    // departmentName: [{ required: true, message: '请输入部门名称', trigger: 'blur' }]
   }
 
-  /**
-   * 重置表单
-   */
-  const handleReset = () => {
-    formRef.value?.resetFields()
-    emits('reset')
-  }
-
-  /**
-   * 监听表单变化，自动触发搜索
-   */
-  watch(
-    form,
-    () => {
-      handleSearch()
+  // 表单配置
+  const formItems = [
+    {
+      label: '部门名称',
+      key: 'deptName',
+      type: 'input',
+      placeholder: '请输入部门名称',
+      clearable: true
     },
-    { deep: true }
-  )
-</script>
-
-<style scoped lang="scss">
-  .department-search {
-    padding: 16px;
-    background-color: #f5f7fa;
-
-    :deep(.el-form) {
-      margin-bottom: 0;
+    {
+      label: '部门编码',
+      key: 'deptCode',
+      type: 'input',
+      props: { placeholder: '请输入部门编码' }
     }
+  ]
+
+  // 事件
+  function handleReset() {
+    console.log('重置表单')
+    emit('reset')
   }
-</style>
+
+  async function handleSearch() {
+    await searchBarRef.value.validate()
+    emit('search', formData.value)
+    console.log('表单数据', formData.value)
+  }
+</script>

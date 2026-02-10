@@ -142,15 +142,16 @@ declare namespace Api {
       createTime: string
       updateTime: string
       children: DepartmentListItem[]
-      parentDepartmentName?: string
       hasChildren?: boolean
       _level?: number
     }
 
     /** 部门表单 */
     interface DepartmentForm {
+      id?: number
+      parentId: number | undefined
       deptName: string
-      parentDepartmentId: string | number
+      parentId: number
       deptCode: string
       description: string
     }
@@ -170,6 +171,75 @@ declare namespace Api {
     /** 角色搜索参数 */
     type RoleSearchParams = Partial<
       Pick<RoleListItem, 'roleId' | 'roleName' | 'roleCode' | 'description' | 'enabled'> &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 区域列表 */
+    type AreaList = Api.Common.PaginatedResponse<AreaListItem>
+
+    /** 区域列表项 */
+    interface AreaListItem {
+      id: number
+      areaName: string
+      deptName: string
+      deptId: number
+      length?: number
+      laneCount?: number
+      deviceCount: number
+      createTime: string
+      updateTime: string
+    }
+
+    /** 区域表单 */
+    interface AreaForm {
+      id?: number
+      areaName: string
+      deptId: number
+      deptName: string
+      length?: number
+      laneCount?: number
+    }
+
+    /** 区域搜索参数 */
+    type AreaSearchParams = Partial<
+      Pick<AreaListItem, 'areaName' | 'deptName'> & Api.Common.CommonSearchParams
+    >
+
+    /** 设备列表 */
+    type DeviceList = Api.Common.PaginatedResponse<DeviceListItem>
+
+    /** 设备列表项 */
+    interface DeviceListItem {
+      id: number
+      deviceName: string
+      deviceCode: string
+      deviceType: 'camera' | 'sensor'
+      deviceModel?: string
+      installLocation?: string
+      ipAddress?: string
+      status: 'online' | 'offline' | 'maintenance'
+      areaId: number
+      areaName: string
+      createTime: string
+      updateTime: string
+    }
+
+    /** 设备表单 */
+    interface DeviceForm {
+      id?: number
+      deviceName: string
+      deviceCode: string
+      deviceType: 'camera' | 'sensor'
+      deviceModel?: string
+      installLocation?: string
+      ipAddress?: string
+      areaId: number
+      areaName: string
+    }
+
+    /** 设备搜索参数 */
+    type DeviceSearchParams = Partial<
+      Pick<DeviceListItem, 'deviceName' | 'deviceCode' | 'deviceType'> &
         Api.Common.CommonSearchParams
     >
   }
