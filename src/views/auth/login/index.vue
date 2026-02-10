@@ -149,7 +149,7 @@
     {
       key: 'admin',
       label: t('login.roles.admin'),
-      userName: 'Admin',
+      userName: 'admin',
       password: '123456',
       roles: ['R_ADMIN']
     },
@@ -188,7 +188,7 @@
   const loading = ref(false)
 
   onMounted(() => {
-    setupAccount('super')
+    setupAccount('admin')
   })
 
   // 设置账号
