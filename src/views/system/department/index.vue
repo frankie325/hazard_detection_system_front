@@ -32,13 +32,11 @@
       <!-- 表格 -->
       <ArtTable
         :loading="loading"
+        row-key="id"
         :data="data"
         :columns="columns"
-        :pagination="pagination"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         @selection-change="handleSelectionChange"
-        @pagination:size-change="handleSizeChange"
-        @pagination:current-change="handleCurrentChange"
       >
       </ArtTable>
 
@@ -47,6 +45,7 @@
         v-model:visible="dialogVisible"
         :type="dialogType"
         :department-data="currentDepartmentData"
+        :department-tree-data="data"
         @submit="handleDialogSubmit"
       />
     </ElCard>
@@ -56,7 +55,7 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { departmentList } from '@/api/system-manage'
+  import { departmentTreeList } from '@/api/system-manage'
   import DepartmentSearch from './modules/department-search.vue'
   import DepartmentDialog from './modules/department-dialog.vue'
   import { ElMessageBox, ElMessage } from 'element-plus'
@@ -76,8 +75,8 @@
 
   // 搜索表单
   const searchForm = ref({
-    departmentName: undefined,
-    status: '1'
+    deptName: '',
+    deptCode: ''
   })
 
   const {
@@ -85,17 +84,17 @@
     columnChecks,
     data,
     loading,
-    pagination,
+    // pagination,
     getData,
     searchParams,
     resetSearchParams,
-    handleSizeChange,
-    handleCurrentChange,
+    // handleSizeChange,
+    // handleCurrentChange,
     refreshData
   } = useTable({
     // 核心配置
     core: {
-      apiFn: departmentList,
+      apiFn: departmentTreeList,
       apiParams: {
         current: 1,
         size: 20,
@@ -107,21 +106,10 @@
         {
           prop: 'deptName',
           label: '部门名称',
-          width: 200,
-          formatter: (row) => {
-            return h('div', { class: 'department-name' }, [
-              h('span', { class: 'department-icon' }, row.hasChildren ? '📁' : '📄'),
-              h('span', { class: 'ml-1' }, row.deptName)
-            ])
-          }
+          width: 200
         },
         {
-          prop: 'parentDepartmentName',
-          label: '上级部门',
-          width: 180
-        },
-        {
-          prop: 'departmentCode',
+          prop: 'deptCode',
           label: '部门编码'
         },
         {
