@@ -13,7 +13,7 @@
       <ElFormItem label="上级部门" prop="parentId">
         <ElTreeSelect
           v-model="formData.parentId"
-          :data="props.departmentTreeData"
+          :data="departmentOptions"
           :props="treeProps"
           :render-after-expand="false"
           placeholder="请选择上级部门"
@@ -50,7 +50,7 @@
   import { ref, computed, watch } from 'vue'
   import type { PropType } from 'vue'
   import { ElMessage, ElForm, ElDialog, ElTreeSelect } from 'element-plus'
-  import { departmentAdd, departmentUpdate } from '@/api/system-manage'
+  import { departmentTreeList, departmentAdd, departmentUpdate } from '@/api/system-manage'
 
   const props = defineProps({
     visible: {
@@ -65,10 +65,6 @@
     departmentData: {
       type: Object as PropType<Partial<Api.SystemManage.DepartmentForm>>,
       default: () => ({})
-    },
-    departmentTreeData: {
-      type: Array as PropType<Api.SystemManage.DepartmentListItem[]>,
-      default: () => []
     }
   })
 
@@ -92,6 +88,7 @@
     deptCode: '',
     description: ''
   })
+  const departmentOptions = ref<Api.SystemManage.DepartmentListItem[]>([])
 
   // 树选择器配置
   const treeProps = {
@@ -118,7 +115,9 @@
   watch(
     () => props.visible,
     (newVal) => {
+      // 初始化获取部门选项
       if (newVal) {
+        getDepartmentOptions()
         if (props.type === 'edit' && props.departmentData) {
           formData.value = { ...props.departmentData } as Api.SystemManage.DepartmentForm
           if (props.departmentData.parentId === 0) formData.value.parentId = undefined
@@ -166,5 +165,13 @@
         console.error('提交失败:', error)
       }
     }
+  }
+
+  /**
+   * @description: 获取部门选项数据
+   */
+  async function getDepartmentOptions() {
+    const res = await departmentTreeList()
+    departmentOptions.value = res
   }
 </script>

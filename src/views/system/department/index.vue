@@ -46,7 +46,6 @@
         v-model:visible="dialogVisible"
         :type="dialogType"
         :department-data="currentDepartmentData"
-        :department-tree-data="data"
         @submit="handleDialogSubmit"
       />
     </ElCard>
@@ -101,10 +100,9 @@
     core: {
       apiFn: departmentTreeList,
       apiParams: {
-        current: 1,
-        size: 20,
         ...searchForm.value
       },
+      excludeParams: ['current', 'size'], //不需要分页
       columnsFactory: () => [
         { type: 'selection' }, // 勾选列
         { type: 'index', width: 60, label: '序号' }, // 序号
@@ -145,33 +143,33 @@
             ])
         }
       ]
-    },
-    // 数据处理
-    transform: {
-      // 数据转换器 - 处理树形结构
-      dataTransformer: (records: any[]): Api.SystemManage.DepartmentListItem[] => {
-        if (!Array.isArray(records)) {
-          console.warn('数据转换器: 期望数组类型，实际收到:', typeof records)
-          return []
-        }
-
-        // 处理树形数据
-        const formatTreeData = (
-          items: Api.SystemManage.DepartmentListItem[],
-          level = 0
-        ): Api.SystemManage.DepartmentListItem[] => {
-          return items.map((item) => {
-            return {
-              ...item,
-              hasChildren: item.children && item.children.length > 0,
-              _level: level
-            }
-          })
-        }
-
-        return formatTreeData(records)
-      }
     }
+    // 数据处理
+    // transform: {
+    //   // 数据转换器 - 处理树形结构
+    //   dataTransformer: (records: any[]): Api.SystemManage.DepartmentListItem[] => {
+    //     if (!Array.isArray(records)) {
+    //       console.warn('数据转换器: 期望数组类型，实际收到:', typeof records)
+    //       return []
+    //     }
+
+    //     // 处理树形数据
+    //     const formatTreeData = (
+    //       items: Api.SystemManage.DepartmentListItem[],
+    //       level = 0
+    //     ): Api.SystemManage.DepartmentListItem[] => {
+    //       return items.map((item) => {
+    //         return {
+    //           ...item,
+    //           hasChildren: item.children && item.children.length > 0,
+    //           _level: level
+    //         }
+    //       })
+    //     }
+
+    //     return formatTreeData(records)
+    //   }
+    // }
   })
 
   /**
