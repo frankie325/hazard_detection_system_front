@@ -130,9 +130,11 @@ declare namespace Api {
         Api.Common.CommonSearchParams
     >
 
-    // 部门列表
-    type DepartmentList = Api.Common.PaginatedResponse<DepartmentListItem>
-
+    /** 部门搜索参数 */
+    interface DepartmentSearch {
+      deptName?: string
+      deptCode?: string
+    }
     /** 部门列表项 */
     interface DepartmentListItem {
       id: number
@@ -144,8 +146,6 @@ declare namespace Api {
       createTime: string
       updateTime: string
       children: DepartmentListItem[]
-      hasChildren?: boolean
-      _level?: number
     }
 
     /** 部门表单 */
@@ -160,22 +160,31 @@ declare namespace Api {
     /** 角色列表 */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>
 
+    /** 角色搜索参数 */
+    type RoleSearchParams = Partial<
+      Pick<RoleListItem, 'roleName' | 'deptName'> & Api.Common.CommonSearchParams
+    >
+
     /** 角色列表项 */
     interface RoleListItem {
-      roleId: number
+      id: number
       roleName: string
-      roleCode: string
-      description: string
-      enabled: boolean
+      deptId: number
+      deptName: string
+      remark: string
+      permissions: string
       createTime: string
       updateTime: string
     }
 
-    /** 角色搜索参数 */
-    type RoleSearchParams = Partial<
-      Pick<RoleListItem, 'roleId' | 'roleName' | 'roleCode' | 'description' | 'enabled'> &
-        Api.Common.CommonSearchParams
-    >
+    /** 角色表单 */
+    interface RoleForm {
+      id?: number
+      roleName: string
+      deptId: number | undefined
+      remark: string
+      // permissions: string
+    }
 
     /** 区域列表 */
     type AreaList = Api.Common.PaginatedResponse<AreaListItem>

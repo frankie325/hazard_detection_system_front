@@ -25,8 +25,8 @@ export function fetchGetMenuList() {
 }
 
 // 获取部门列表
-export function departmentTreeList(data?: Api.Common.CommonSearchParams) {
-  return request.post<Api.SystemManage.DepartmentList>({
+export function departmentTreeList(data?: Api.SystemManage.DepartmentSearch) {
+  return request.post<Api.SystemManage.DepartmentListItem[]>({
     url: '/sys/dept/tree',
     data
   })
@@ -34,7 +34,7 @@ export function departmentTreeList(data?: Api.Common.CommonSearchParams) {
 
 // 新增部门
 export function departmentAdd(data?: Api.SystemManage.DepartmentForm) {
-  return request.post<Api.SystemManage.DepartmentList>({
+  return request.post({
     url: '/sys/dept/add',
     data
   })
@@ -70,27 +70,41 @@ export function departmentBatchDelete(ids?: number[]) {
   })
 }
 
-// 获取部门列表
-// export function departmentBatchDelete(data?: Api.Common.CommonSearchParams) {
-//   return request.post<Api.SystemManage.DepartmentList>({
-//     url: '/sys/dept/tree',
-//     data
-//   })
-// }
-// // 编辑部门
-// export function fetchUpdateDepartment(data: Api.SystemManage.DepartmentForm, config?: AxiosRequestConfig) {
-//   return request.put('/api/system/department', data, config)
-// }
+// 获取角色列表
+export function roleList(data?: Api.SystemManage.RoleSearchParams) {
+  return request.post<Api.SystemManage.RoleList>({
+    url: '/sys/role/list',
+    data
+  })
+}
 
-// // 删除部门
-// export function fetchDeleteDepartment(id: string, config?: AxiosRequestConfig) {
-//   return request.delete(`/api/system/department/${id}`, config)
-// }
+// 新增角色
+export function roleAdd(data: Api.SystemManage.RoleForm) {
+  return request.post({
+    url: '/sys/role/add',
+    data
+  })
+}
 
-// // 批量删除部门
-// export function fetchBatchDeleteDepartment(ids: string[], config?: AxiosRequestConfig) {
-//   return request.delete('/api/system/department/batch', {
-//     data: { ids },
-//     ...config
-//   })
-// }
+// 新增角色
+export function roleUpdate(data: Api.SystemManage.RoleForm) {
+  return request.put({
+    url: '/sys/role/update',
+    data
+  })
+}
+
+// 删除角色
+export function roleDeleteById(id: number) {
+  return request.del({
+    url: `/sys/role/delete/${id}`
+  })
+}
+
+// 批量删除部门
+export function roleBatchDelete(ids?: number[]) {
+  return request.del({
+    url: '/sys/role/batchDelete',
+    data: ids
+  })
+}
