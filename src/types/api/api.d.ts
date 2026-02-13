@@ -58,6 +58,12 @@ declare namespace Api {
 
     /** 启用状态 */
     type EnableStatus = '1' | '2'
+
+    /** 性别 */
+    enum GenderEnum {
+      MALE = 'M',
+      FEMALE = 'F'
+    }
   }
 
   /** 认证类型 */
@@ -108,27 +114,36 @@ declare namespace Api {
     /** 用户列表项 */
     interface UserListItem {
       id: number
-      avatar: string
-      status: string
-      userName: string
-      userGender: string
-      // nickName: string
-      userPhone: string
-      userEmail: string
-      // userRoles: string[]
-      deptId: number
+      name: string
+      username: string
+      idCard: string
+      phone: string
+      gender: Api.Common.GenderEnum
+      remark: string
+      roleId: number
+      roleName: string
       deptName: string
-      // createBy: string
       createTime: string
-      // updateBy: string
       updateTime: string
     }
 
     /** 用户搜索参数 */
     type UserSearchParams = Partial<
-      Pick<UserListItem, 'id' | 'userName' | 'userGender' | 'userPhone' | 'userEmail' | 'status'> &
-        Api.Common.CommonSearchParams
+      Pick<UserListItem, 'username' | 'roleName' | 'deptName'> & Api.Common.CommonSearchParams
     >
+
+    /** 用户表单 */
+    interface UserForm {
+      id?: number
+      name: string
+      gender: Api.Common.GenderEnum
+      username: string
+      password?: string
+      phone: string
+      idCard: string
+      roleId: number | undefined
+      remark: string
+    }
 
     /** 部门搜索参数 */
     interface DepartmentSearch {
