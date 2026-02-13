@@ -22,3 +22,9 @@ export enum TableSizeEnum {
   SMALL = 'small',
   LARGE = 'large'
 }
+
+/** 性别 */
+export enum GenderEnum {
+  MALE = 'M',
+  FEMALE = 'F'
+}
