@@ -154,3 +154,42 @@ export function userBatchDelete(ids?: number[]) {
     data: ids
   })
 }
+
+// 获取区域列表
+export function areaList(data?: Api.SystemManage.AreaSearchParams) {
+  return request.post<Api.SystemManage.AreaList>({
+    url: '/sys/area/list',
+    data
+  })
+}
+
+// 新增区域
+export function areaAdd(data: Api.SystemManage.AreaForm) {
+  return request.post({
+    url: '/sys/area/add',
+    data
+  })
+}
+
+// 更新区域
+export function areaUpdate(data: Api.SystemManage.AreaForm) {
+  return request.put({
+    url: '/sys/area/update',
+    data
+  })
+}
+
+// 删除区域
+export function areaDeleteById(id: number) {
+  return request.del({
+    url: `/sys/area/delete/${id}`
+  })
+}
+
+// 批量删除区域
+export function areaBatchDelete(ids?: number[]) {
+  return request.del({
+    url: '/sys/area/batchDelete',
+    data: ids
+  })
+}

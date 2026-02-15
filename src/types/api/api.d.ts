@@ -221,7 +221,7 @@ declare namespace Api {
     interface AreaForm {
       id?: number
       areaName: string
-      deptId: number
+      deptId: number | undefined
       deptName: string
       length?: number
       laneCount?: number

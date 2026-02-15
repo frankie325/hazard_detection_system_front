@@ -8,7 +8,13 @@
         <template #left>
           <ElSpace wrap>
             <ElButton @click="showDialog('add')" v-ripple>新增区域</ElButton>
-            <ElButton @click="handleBatchDelete" v-ripple>删除</ElButton>
+            <ElButton
+              type="danger"
+              :disabled="!selectedRows.length"
+              @click="handleBatchDelete"
+              v-ripple
+              >删除</ElButton
+            >
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -37,9 +43,16 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
+  import {
+    areaList,
+    areaDeleteById,
+    areaBatchDelete,
+    areaAdd,
+    areaUpdate
+  } from '@/api/system-manage'
   import AreaSearch from './modules/area-search.vue'
   import AreaDialog from './modules/area-dialog.vue'
-  import { ElMessageBox } from 'element-plus'
+  import { ElMessageBox, ElMessage } from 'element-plus'
   import { DialogType } from '@/types'
 
   defineOptions({ name: 'AreaManage' })
@@ -65,7 +78,6 @@
     data,
     loading,
     pagination,
-    getData,
     searchParams,
     resetSearchParams,
     handleSizeChange,
@@ -73,123 +85,11 @@
     refreshData
   } = useTable({
     core: {
-      apiFn: async (params) => {
-        await new Promise((resolve) => setTimeout(resolve, 300))
-
-        const mockData: Api.SystemManage.AreaListItem[] = [
-          {
-            id: 1,
-            areaName: '京哈高速管理处A',
-            deptName: '京哈高速管理处',
-            deptId: 1,
-            length: 18,
-            laneCount: 15,
-            deviceCount: 4,
-            createTime: '2024-01-01 10:00:00',
-            updateTime: '2024-03-15 14:30:00'
-          },
-          {
-            id: 2,
-            areaName: '京沪高速管理处B',
-            deptName: '京沪高速管理处',
-            deptId: 2,
-            length: 9,
-            laneCount: 30,
-            deviceCount: 12,
-            createTime: '2024-01-02 09:15:00',
-            updateTime: '2024-03-14 16:45:00'
-          },
-          {
-            id: 3,
-            areaName: '京港澳高速管理处C',
-            deptName: '京港澳高速管理处',
-            deptId: 3,
-            length: 20,
-            laneCount: 12,
-            deviceCount: 6,
-            createTime: '2024-01-03 14:20:00',
-            updateTime: '2024-03-13 10:20:00'
-          },
-          {
-            id: 4,
-            areaName: '大广高速管理处D',
-            deptName: '大广高速管理处',
-            deptId: 4,
-            length: 6,
-            laneCount: 15,
-            deviceCount: 26,
-            createTime: '2024-01-04 11:30:00',
-            updateTime: '2024-03-12 15:50:00'
-          },
-          {
-            id: 5,
-            areaName: '京哈高速管理处A-K125-K140',
-            deptName: '京哈高速管理处',
-            deptId: 1,
-            length: 15,
-            laneCount: 4,
-            deviceCount: 12,
-            createTime: '2024-01-05 16:40:00',
-            updateTime: '2024-03-11 09:35:00'
-          },
-          {
-            id: 6,
-            areaName: '京沪高速管理处B-K200-K212',
-            deptName: '京沪高速管理处',
-            deptId: 2,
-            length: 12,
-            laneCount: 4,
-            deviceCount: 15,
-            createTime: '2024-01-06 13:50:00',
-            updateTime: '2024-03-10 17:25:00'
-          },
-          {
-            id: 7,
-            areaName: '京港澳高速管理处C-K50-K62',
-            deptName: '京港澳高速管理处',
-            deptId: 3,
-            length: 20,
-            laneCount: 4,
-            deviceCount: 12,
-            createTime: '2024-01-07 10:15:00',
-            updateTime: '2024-03-09 14:10:00'
-          },
-          {
-            id: 8,
-            areaName: '大广高速管理处D-K305-K320',
-            deptName: '大广高速管理处',
-            deptId: 4,
-            length: 6,
-            laneCount: 26,
-            deviceCount: 15,
-            createTime: '2024-01-08 15:25:00',
-            updateTime: '2024-03-08 11:45:00'
-          }
-        ]
-
-        let filteredData = mockData
-        if (params.areaName) {
-          filteredData = filteredData.filter((item) => item.areaName.includes(params.areaName))
-        }
-        if (params.deptName) {
-          filteredData = filteredData.filter((item) => item.deptName.includes(params.deptName))
-        }
-
-        const total = filteredData.length
-        const start = (params.current - 1) * params.size
-        const end = start + params.size
-        const records = filteredData.slice(start, end)
-
-        return {
-          records,
-          current: params.current,
-          size: params.size,
-          total
-        }
-      },
+      apiFn: areaList,
       apiParams: {
         current: 1,
-        size: 20
+        size: 20,
+        ...searchForm.value
       },
       columnsFactory: () => [
         { type: 'selection' },
@@ -251,7 +151,7 @@
    */
   const handleSearch = (params: Record<string, any>) => {
     Object.assign(searchParams, params)
-    getData()
+    refreshData()
   }
 
   /**
@@ -273,14 +173,11 @@
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
+    }).then(async () => {
+      await areaDeleteById(data.id)
+      ElMessage.success('删除成功')
+      refreshData()
     })
-      .then(() => {
-        ElMessage.success('删除成功')
-        refreshData()
-      })
-      .catch(() => {
-        ElMessage.info('已取消删除')
-      })
   }
 
   /**
@@ -295,20 +192,32 @@
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
-    })
-      .then(() => {
-        ElMessage.success('删除成功')
+    }).then(async () => {
+      try {
+        const ids = selectedRows.value.map((item) => item.id)
+        await areaBatchDelete(ids)
+        ElMessage.success(`已成功删除 ${selectedRows.value.length} 个区域`)
+        selectedRows.value = []
         refreshData()
-      })
-      .catch(() => {
-        ElMessage.info('已取消删除')
-      })
+        refreshData()
+      } catch (error) {
+        console.error('批量删除失败:', error)
+        ElMessage.error('批量删除失败，请重试')
+      }
+    })
   }
 
   /**
    * 弹窗提交
    */
-  const handleDialogSubmit = () => {
+  const handleDialogSubmit = async (formData: Api.SystemManage.AreaForm) => {
+    if (dialogType.value === 'add') {
+      await areaAdd(formData)
+      ElMessage.success('新增成功')
+    } else {
+      await areaUpdate(formData)
+      ElMessage.success('编辑成功')
+    }
     dialogVisible.value = false
     currentAreaData.value = {}
     refreshData()
