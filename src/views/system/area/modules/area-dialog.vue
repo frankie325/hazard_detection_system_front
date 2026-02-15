@@ -10,20 +10,17 @@
         />
       </ElFormItem>
 
-      <ElFormItem label="负责部门" prop="deptName">
-        <ElSelect
-          v-model="formData.deptName"
+      <ElFormItem label="负责部门" prop="deptId">
+        <ElTreeSelect
+          v-model="formData.deptId"
+          :data="departmentList"
+          :props="{ label: 'deptName', value: 'id', children: 'children' }"
           placeholder="请选择负责部门"
+          :loading="loading"
           clearable
-          @change="handleDeptChange"
-        >
-          <ElOption
-            v-for="item in deptOptions"
-            :key="item.id"
-            :label="item.deptName"
-            :value="item.deptName"
-          />
-        </ElSelect>
+          check-strictly
+          style="width: 100%"
+        />
       </ElFormItem>
 
       <ElFormItem label="车道数" prop="laneCount">
@@ -56,8 +53,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, watch } from 'vue'
-  import { ElMessage, ElForm, ElDialog, ElInputNumber, ElSelect, ElOption } from 'element-plus'
+  import { ref, computed, watch, onMounted } from 'vue'
+  import { ElMessage, ElForm, ElDialog, ElInputNumber, ElTreeSelect } from 'element-plus'
+  import { departmentTreeList } from '@/api/system-manage'
 
   const props = defineProps({
     visible: {
@@ -77,7 +75,7 @@
 
   interface Emits {
     (e: 'update:visible', value: boolean): void
-    (e: 'submit'): void
+    (e: 'submit', data: Api.SystemManage.AreaForm): void
   }
 
   const emits = defineEmits<Emits>()
@@ -91,37 +89,41 @@
   const formData = ref<Api.SystemManage.AreaForm>({
     id: undefined,
     areaName: '',
-    deptId: 0,
+    deptId: undefined,
     deptName: '',
     length: undefined,
     laneCount: undefined
   })
 
-  const deptOptions = ref([
-    { id: 1, deptName: '京哈高速管理处' },
-    { id: 2, deptName: '京沪高速管理处' },
-    { id: 3, deptName: '京港澳高速管理处' },
-    { id: 4, deptName: '大广高速管理处' }
-  ])
+  const loading = ref(false)
+  const departmentList = ref<Api.SystemManage.DepartmentListItem[]>([])
 
   const rules = {
     areaName: [
       { required: true, message: '请输入区域名称', trigger: 'blur' },
       { max: 32, message: '区域名称最多32个字符', trigger: 'blur' }
     ],
-    deptName: [{ required: true, message: '请选择负责部门', trigger: 'change' }]
+    deptId: [{ required: true, message: '请选择负责部门', trigger: 'change' }]
   }
 
   const title = computed(() => {
     return props.type === 'add' ? '新增区域' : '编辑区域'
   })
 
-  const handleDeptChange = (value: string) => {
-    const dept = deptOptions.value.find((item) => item.deptName === value)
-    if (dept) {
-      formData.value.deptId = dept.id
+  const loadDepartmentList = async () => {
+    loading.value = true
+    try {
+      departmentList.value = await departmentTreeList()
+    } catch (error) {
+      console.error('加载部门列表失败:', error)
+    } finally {
+      loading.value = false
     }
   }
+
+  onMounted(() => {
+    loadDepartmentList()
+  })
 
   watch(
     () => props.visible,
@@ -133,7 +135,7 @@
           formData.value = {
             id: undefined,
             areaName: '',
-            deptId: 0,
+            deptId: undefined,
             deptName: '',
             length: undefined,
             laneCount: undefined
@@ -154,8 +156,7 @@
 
     const valid = await formRef.value.validate().catch(() => false)
     if (valid) {
-      ElMessage.success(props.type === 'add' ? '新增成功' : '编辑成功')
-      emits('submit')
+      emits('submit', formData.value)
       handleClose()
     } else {
       ElMessage.error('请填写完整信息')
