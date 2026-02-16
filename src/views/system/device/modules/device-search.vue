@@ -11,6 +11,8 @@
 </template>
 
 <script setup lang="ts">
+  import { DeviceTypeEnum, DeviceStatusEnum } from '@/enums/formEnum'
+
   interface Props {
     modelValue: Record<string, any>
   }
@@ -51,8 +53,21 @@
       props: {
         placeholder: '请选择设备类型',
         options: [
-          { label: '摄像头', value: 'camera' },
-          { label: '传感器', value: 'sensor' }
+          { label: '摄像头', value: DeviceTypeEnum.CAMERA },
+          { label: '传感器', value: DeviceTypeEnum.SENSOR }
+        ]
+      }
+    },
+    {
+      label: '设备状态',
+      key: 'status',
+      type: 'select',
+      props: {
+        placeholder: '请选择设备状态',
+        options: [
+          { label: '在线', value: DeviceStatusEnum.ONLINE },
+          { label: '离线', value: DeviceStatusEnum.OFFLINE },
+          { label: '维护', value: DeviceStatusEnum.MAINTENANCE }
         ]
       }
     }

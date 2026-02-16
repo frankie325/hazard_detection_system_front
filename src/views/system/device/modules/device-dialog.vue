@@ -20,22 +20,26 @@
 
       <ElFormItem label="设备类型" prop="deviceType">
         <ElSelect v-model="formData.deviceType" placeholder="请选择设备类型">
-          <ElOption label="摄像头" value="camera" />
-          <ElOption label="传感器" value="sensor" />
+          <ElOption
+            v-for="item in deviceTypeOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </ElSelect>
       </ElFormItem>
 
-      <ElFormItem label="设备型号" prop="deviceModel">
+      <ElFormItem label="设备型号" prop="model">
         <ElInput
-          v-model="formData.deviceModel"
+          v-model="formData.model"
           placeholder="请输入设备型号，如:HIKVISION DS-2CD3T45"
           maxlength="64"
         />
       </ElFormItem>
 
-      <ElFormItem label="安装位置" prop="installLocation">
+      <ElFormItem label="安装位置" prop="location">
         <ElInput
-          v-model="formData.installLocation"
+          v-model="formData.location"
           placeholder="请输入安装位置，如:隧道入口左侧护栏"
           maxlength="100"
         />
@@ -60,6 +64,8 @@
 <script setup lang="ts">
   import { ref, computed, watch } from 'vue'
   import { ElMessage, ElForm, ElDialog } from 'element-plus'
+  import { DeviceTypeEnum } from '@/enums/formEnum'
+  import { deviceAdd, deviceUpdate } from '@/api/system-manage'
 
   const props = defineProps({
     visible: {
@@ -88,6 +94,12 @@
 
   const emits = defineEmits<Emits>()
 
+  // 设备类型选项
+  const deviceTypeOptions = [
+    { label: '摄像头', value: DeviceTypeEnum.CAMERA },
+    { label: '传感器', value: DeviceTypeEnum.SENSOR }
+  ]
+
   const visibleModel = computed({
     get: () => props.visible,
     set: (value) => emits('update:visible', value)
@@ -98,9 +110,9 @@
     id: undefined,
     deviceName: '',
     deviceCode: '',
-    deviceType: 'camera',
-    deviceModel: '',
-    installLocation: '',
+    deviceType: DeviceTypeEnum.CAMERA,
+    model: '',
+    location: '',
     ipAddress: '',
     areaId: 0,
     areaName: ''
@@ -137,9 +149,9 @@
             id: undefined,
             deviceName: '',
             deviceCode: '',
-            deviceType: 'camera',
-            deviceModel: '',
-            installLocation: '',
+            deviceType: DeviceTypeEnum.CAMERA,
+            model: '',
+            location: '',
             ipAddress: '',
             areaId: props.areaData?.id || 0,
             areaName: props.areaData?.areaName || ''
@@ -160,9 +172,19 @@
 
     const valid = await formRef.value.validate().catch(() => false)
     if (valid) {
-      ElMessage.success(props.type === 'add' ? '新增成功' : '编辑成功')
-      emits('submit')
-      handleClose()
+      try {
+        if (props.type === 'add') {
+          await deviceAdd(formData.value)
+          ElMessage.success('新增成功')
+        } else {
+          await deviceUpdate(formData.value)
+          ElMessage.success('编辑成功')
+        }
+        handleClose()
+        emits('submit')
+      } catch (error) {
+        console.error(error)
+      }
     } else {
       ElMessage.error('请填写完整信息')
     }

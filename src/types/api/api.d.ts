@@ -108,6 +108,8 @@ declare namespace Api {
 
   /** 系统管理类型 */
   namespace SystemManage {
+    type GenderEnum = import('@/enums/formEnum').GenderEnum
+
     /** 用户列表 */
     type UserList = Api.Common.PaginatedResponse<UserListItem>
 
@@ -118,7 +120,7 @@ declare namespace Api {
       username: string
       idCard: string
       phone: string
-      gender: Api.Common.GenderEnum
+      gender: GenderEnum
       remark: string
       roleId: number
       roleName: string
@@ -136,7 +138,7 @@ declare namespace Api {
     interface UserForm {
       id?: number
       name: string
-      gender: Api.Common.GenderEnum
+      gender: GenderEnum
       username: string
       password?: string
       phone: string
@@ -235,16 +237,24 @@ declare namespace Api {
     /** 设备列表 */
     type DeviceList = Api.Common.PaginatedResponse<DeviceListItem>
 
+    /** 设备类型 */
+    type DeviceType = import('@/enums/formEnum').DeviceTypeEnum
+
+    /** 设备状态 */
+    type DeviceStatus = import('@/enums/formEnum').DeviceStatusEnum
+
     /** 设备列表项 */
     interface DeviceListItem {
       id: number
       deviceName: string
       deviceCode: string
-      deviceType: 'camera' | 'sensor'
-      deviceModel?: string
-      installLocation?: string
+      deviceType: DeviceType
+      deviceTypeName?: string
+      model?: string
+      location?: string
       ipAddress?: string
-      status: 'online' | 'offline' | 'maintenance'
+      status: DeviceStatus
+      statusName?: string
       areaId: number
       areaName: string
       createTime: string
@@ -256,9 +266,9 @@ declare namespace Api {
       id?: number
       deviceName: string
       deviceCode: string
-      deviceType: 'camera' | 'sensor'
-      deviceModel?: string
-      installLocation?: string
+      deviceType: DeviceType
+      model?: string
+      location?: string
       ipAddress?: string
       areaId: number
       areaName: string
@@ -266,7 +276,7 @@ declare namespace Api {
 
     /** 设备搜索参数 */
     type DeviceSearchParams = Partial<
-      Pick<DeviceListItem, 'deviceName' | 'deviceCode' | 'deviceType'> &
+      Pick<DeviceListItem, 'deviceName' | 'deviceCode' | 'deviceType' | 'status' | 'areaId'> &
         Api.Common.CommonSearchParams
     >
   }

@@ -13,7 +13,7 @@
         />
         <ElTree
           ref="areaTreeRef"
-          :data="areaTreeData"
+          :data="areaData"
           :props="treeProps"
           :filter-node-method="filterNode"
           node-key="id"
@@ -47,7 +47,13 @@
                 <ElButton @click="handleAddDevice" :disabled="!selectedAreaId" v-ripple>
                   添加设备
                 </ElButton>
-                <ElButton @click="handleBatchDelete" v-ripple>删除</ElButton>
+                <ElButton
+                  type="danger"
+                  :disabled="!selectedRows.length"
+                  @click="handleBatchDelete"
+                  v-ripple
+                  >删除</ElButton
+                >
               </ElSpace>
             </template>
           </ArtTableHeader>
@@ -79,9 +85,10 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
+  import { deviceList, deviceDeleteById, deviceBatchDelete, allAreaList } from '@/api/system-manage'
   import DeviceSearch from './modules/device-search.vue'
   import DeviceDialog from './modules/device-dialog.vue'
-  import { ElMessageBox, ElTag, ElTree } from 'element-plus'
+  import { ElMessageBox, ElTag, ElTree, ElMessage } from 'element-plus'
   import { DialogType } from '@/types'
 
   defineOptions({ name: 'DeviceManage' })
@@ -90,7 +97,7 @@
 
   const searchArea = ref('')
 
-  const selectedAreaId = ref<number>()
+  const selectedAreaId = ref<number | null>()
   const selectedAreaData = ref<Api.SystemManage.AreaListItem | null>(null)
 
   const dialogType = ref<DialogType>('add')
@@ -106,75 +113,26 @@
   }
 
   // 区域树形数据
-  const areaTreeData = ref([
-    {
-      id: 1,
-      areaName: 'G1 京哈高速',
-      deviceCount: 12,
-      children: [
-        {
-          id: 11,
-          areaName: '隧道A',
-          deviceCount: 2,
-          children: [
-            { id: 111, areaName: '隧道A-入口', deviceCount: 1 },
-            { id: 112, areaName: '隧道A-出口', deviceCount: 1 }
-          ]
-        },
-        {
-          id: 12,
-          areaName: '隧道B',
-          deviceCount: 1,
-          children: [{ id: 121, areaName: '隧道B-中部', deviceCount: 1 }]
-        },
-        {
-          id: 13,
-          areaName: '桥梁D',
-          deviceCount: 1,
-          children: [{ id: 131, areaName: '桥梁D-南侧', deviceCount: 1 }]
-        },
-        {
-          id: 14,
-          areaName: '路段C',
-          deviceCount: 1,
-          children: [{ id: 141, areaName: '路段C-中段', deviceCount: 1 }]
-        },
-        {
-          id: 15,
-          areaName: '路段E',
-          deviceCount: 1,
-          children: [{ id: 151, areaName: '路段E-匝道', deviceCount: 1 }]
-        },
-        {
-          id: 16,
-          areaName: '路段F',
-          deviceCount: 1,
-          children: [{ id: 161, areaName: '路段F-上行', deviceCount: 1 }]
-        }
-      ]
-    },
-    {
-      id: 2,
-      areaName: 'G4 京港澳高速',
-      deviceCount: 8,
-      children: [
-        {
-          id: 21,
-          areaName: '隧道C',
-          deviceCount: 2,
-          children: [
-            { id: 211, areaName: '隧道C-入口', deviceCount: 1 },
-            { id: 212, areaName: '隧道C-中段', deviceCount: 1 }
-          ]
-        }
-      ]
-    }
-  ])
+  const areaData = ref<Api.SystemManage.AreaListItem[]>([])
 
-  const searchForm = ref({
+  // 加载区域树数据
+  const loadAreaData = async () => {
+    try {
+      areaData.value = await allAreaList()
+    } catch (error) {
+      console.error('加载区域列表失败', error)
+    }
+  }
+
+  onMounted(() => {
+    loadAreaData()
+  })
+
+  const searchForm = ref<Api.SystemManage.DeviceSearchParams>({
     deviceName: undefined,
     deviceCode: undefined,
-    deviceType: undefined
+    deviceType: undefined,
+    status: undefined
   })
 
   const {
@@ -183,7 +141,6 @@
     data,
     loading,
     pagination,
-    getData,
     searchParams,
     resetSearchParams,
     handleSizeChange,
@@ -191,185 +148,11 @@
     refreshData
   } = useTable({
     core: {
-      apiFn: async (params) => {
-        await new Promise((resolve) => setTimeout(resolve, 300))
-
-        const mockData: Api.SystemManage.DeviceListItem[] = [
-          {
-            id: 1,
-            deviceName: '隧道A入口摄像头',
-            deviceCode: 'CAM-A-01',
-            deviceType: 'camera',
-            deviceModel: 'HIKVISION DS-2CD3T45',
-            installLocation: '隧道A-入口',
-            ipAddress: '192.168.1.10',
-            status: 'online',
-            areaId: 11,
-            areaName: '隧道A',
-            createTime: '2024-01-01 10:00:00',
-            updateTime: '2024-03-15 14:30:00'
-          },
-          {
-            id: 2,
-            deviceName: '隧道A火焰传感器4',
-            deviceCode: 'FIRE-A-04',
-            deviceType: 'sensor',
-            deviceModel: 'Honeywell FS-200',
-            installLocation: '隧道A-出口',
-            ipAddress: '192.168.1.11',
-            status: 'online',
-            areaId: 11,
-            areaName: '隧道A',
-            createTime: '2024-01-02 09:15:00',
-            updateTime: '2024-03-14 16:45:00'
-          },
-          {
-            id: 3,
-            deviceName: '隧道B火焰传感器2',
-            deviceCode: 'FIRE-B-02',
-            deviceType: 'sensor',
-            deviceModel: 'Honeywell FS-200',
-            installLocation: '隧道B-中部',
-            ipAddress: '192.168.1.12',
-            status: 'online',
-            areaId: 12,
-            areaName: '隧道B',
-            createTime: '2024-01-03 14:20:00',
-            updateTime: '2024-03-13 10:20:00'
-          },
-          {
-            id: 4,
-            deviceName: '桥梁D南侧摄像头9',
-            deviceCode: 'CAM-D-09',
-            deviceType: 'camera',
-            deviceModel: 'HIKVISION DS-2CD3T45',
-            installLocation: '桥梁D-南侧',
-            ipAddress: '192.168.1.13',
-            status: 'offline',
-            areaId: 13,
-            areaName: '桥梁D',
-            createTime: '2024-01-04 11:30:00',
-            updateTime: '2024-03-12 15:50:00'
-          },
-          {
-            id: 5,
-            deviceName: '路段C应力传感器5',
-            deviceCode: 'STRESS-C-05',
-            deviceType: 'sensor',
-            deviceModel: 'KYOWA KFG-5',
-            installLocation: '路段C-中段',
-            ipAddress: '192.168.1.14',
-            status: 'maintenance',
-            areaId: 14,
-            areaName: '路段C',
-            createTime: '2024-01-05 16:40:00',
-            updateTime: '2024-03-11 09:35:00'
-          },
-          {
-            id: 6,
-            deviceName: '路段E地质传感器3',
-            deviceCode: 'GEO-E-03',
-            deviceType: 'sensor',
-            deviceModel: 'Trimble R8',
-            installLocation: '路段E-匝道',
-            ipAddress: '192.168.1.15',
-            status: 'online',
-            areaId: 15,
-            areaName: '路段E',
-            createTime: '2024-01-06 13:50:00',
-            updateTime: '2024-03-10 17:25:00'
-          },
-          {
-            id: 7,
-            deviceName: '路段F上行摄像头11',
-            deviceCode: 'CAM-F-11',
-            deviceType: 'camera',
-            deviceModel: 'HIKVISION DS-2CD3T45',
-            installLocation: '路段F-上行',
-            ipAddress: '192.168.1.16',
-            status: 'online',
-            areaId: 16,
-            areaName: '路段F',
-            createTime: '2024-01-07 10:15:00',
-            updateTime: '2024-03-09 14:10:00'
-          },
-          {
-            id: 8,
-            deviceName: '隧道A-1断面摄像头',
-            deviceCode: 'CAM-A1-01',
-            deviceType: 'camera',
-            deviceModel: 'HIKVISION DS-2CD3T45',
-            installLocation: 'A-1断面左侧护栏',
-            ipAddress: '192.168.1.17',
-            status: 'online',
-            areaId: 11,
-            areaName: '隧道A',
-            createTime: '2024-01-08 15:25:00',
-            updateTime: '2024-03-08 11:45:00'
-          },
-          {
-            id: 9,
-            deviceName: '路段B-1断面摄像头',
-            deviceCode: 'CAM-B1-01',
-            deviceType: 'camera',
-            deviceModel: 'HIKVISION DS-2CD3T45',
-            installLocation: 'B-1断面',
-            ipAddress: '192.168.1.18',
-            status: 'online',
-            areaId: 1,
-            areaName: 'G1 京哈高速',
-            createTime: '2024-01-09 09:40:00',
-            updateTime: '2024-03-07 16:20:00'
-          },
-          {
-            id: 10,
-            deviceName: '隧道A-2断面摄像头',
-            deviceCode: 'CAM-A2-01',
-            deviceType: 'camera',
-            deviceModel: 'HIKVISION DS-2CD3T45',
-            installLocation: 'A-2断面',
-            ipAddress: '192.168.1.19',
-            status: 'offline',
-            areaId: 11,
-            areaName: '隧道A',
-            createTime: '2024-01-10 14:55:00',
-            updateTime: '2024-03-06 10:30:00'
-          }
-        ]
-
-        let filteredData = mockData
-
-        // 区域过滤
-        if (selectedAreaId.value) {
-          filteredData = filteredData.filter((item) => item.areaId === selectedAreaId.value)
-        }
-
-        // 搜索过滤
-        if (params.deviceName) {
-          filteredData = filteredData.filter((item) => item.deviceName.includes(params.deviceName))
-        }
-        if (params.deviceCode) {
-          filteredData = filteredData.filter((item) => item.deviceCode.includes(params.deviceCode))
-        }
-        if (params.deviceType) {
-          filteredData = filteredData.filter((item) => item.deviceType === params.deviceType)
-        }
-
-        const total = filteredData.length
-        const start = (params.current - 1) * params.size
-        const end = start + params.size
-        const records = filteredData.slice(start, end)
-
-        return {
-          records,
-          current: params.current,
-          size: params.size,
-          total
-        }
-      },
+      apiFn: deviceList,
       apiParams: {
         current: 1,
-        size: 20
+        size: 20,
+        ...searchForm.value
       },
       columnsFactory: () => [
         { type: 'selection' },
@@ -390,15 +173,15 @@
           width: 100,
           formatter: (row) => {
             const typeMap = {
-              camera: { text: '摄像头', type: 'primary' as const },
-              sensor: { text: '传感器', type: 'success' as const }
+              CAMERA: { text: '摄像头', type: 'primary' as const },
+              SENSOR: { text: '传感器', type: 'success' as const }
             }
             const config = typeMap[row.deviceType] || { text: '未知', type: 'info' as const }
             return h(ElTag, { type: config.type }, () => config.text)
           }
         },
         {
-          prop: 'deviceModel',
+          prop: 'model',
           label: '型号',
           width: 180
         },
@@ -418,13 +201,19 @@
           width: 100,
           formatter: (row) => {
             const statusMap = {
-              online: { text: '在线', type: 'success' as const },
-              offline: { text: '离线', type: 'info' as const },
-              maintenance: { text: '维护', type: 'warning' as const }
+              ONLINE: { text: '在线', type: 'success' as const },
+              OFFLINE: { text: '离线', type: 'info' as const },
+              MAINTENANCE: { text: '维护', type: 'warning' as const }
             }
             const config = statusMap[row.status] || { text: '未知', type: 'info' as const }
             return h(ElTag, { type: config.type }, () => config.text)
           }
+        },
+        {
+          prop: 'createTime',
+          label: '创建时间',
+          width: 180,
+          sortable: true
         },
         {
           prop: 'operation',
@@ -444,6 +233,14 @@
             ])
         }
       ]
+    },
+    hooks: {
+      resetFormCallback() {
+        selectedAreaId.value = null
+        selectedAreaData.value = null
+        // 取消树节点高亮
+        areaTreeRef.value?.setCurrentKey()
+      }
     }
   })
 
@@ -459,12 +256,13 @@
   const handleAreaClick = (data: any) => {
     selectedAreaId.value = data.id
     selectedAreaData.value = data
+    searchParams.areaId = data.id
     refreshData()
   }
 
   const handleSearch = (params: Record<string, any>) => {
     Object.assign(searchParams, params)
-    getData()
+    refreshData()
   }
 
   const handleAddDevice = () => {
@@ -488,14 +286,12 @@
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
+    }).then(async () => {
+      await deviceDeleteById(data.id)
+      ElMessage.success('删除成功')
+      refreshData()
+      loadAreaData()
     })
-      .then(() => {
-        ElMessage.success('删除成功')
-        refreshData()
-      })
-      .catch(() => {
-        ElMessage.info('已取消删除')
-      })
   }
 
   const handleBatchDelete = () => {
@@ -507,20 +303,19 @@
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
+    }).then(async () => {
+      const ids = selectedRows.value.map((item) => item.id)
+      await deviceBatchDelete(ids)
+      ElMessage.success('删除成功')
+      selectedRows.value = []
+      refreshData()
+      loadAreaData()
     })
-      .then(() => {
-        ElMessage.success('删除成功')
-        refreshData()
-      })
-      .catch(() => {
-        ElMessage.info('已取消删除')
-      })
   }
 
   const handleDialogSubmit = () => {
-    dialogVisible.value = false
-    currentDeviceData.value = {}
     refreshData()
+    loadAreaData()
   }
 
   const handleSelectionChange = (selection: DeviceListItem[]): void => {
@@ -581,7 +376,6 @@
           display: flex;
           flex: 1;
           flex-direction: column;
-          padding: 0;
         }
       }
     }
