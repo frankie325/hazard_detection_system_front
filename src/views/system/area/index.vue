@@ -43,13 +43,7 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import {
-    areaList,
-    areaDeleteById,
-    areaBatchDelete,
-    areaAdd,
-    areaUpdate
-  } from '@/api/system-manage'
+  import { areaList, areaDeleteById, areaBatchDelete } from '@/api/system-manage'
   import AreaSearch from './modules/area-search.vue'
   import AreaDialog from './modules/area-dialog.vue'
   import { ElMessageBox, ElMessage } from 'element-plus'
@@ -210,16 +204,7 @@
   /**
    * 弹窗提交
    */
-  const handleDialogSubmit = async (formData: Api.SystemManage.AreaForm) => {
-    if (dialogType.value === 'add') {
-      await areaAdd(formData)
-      ElMessage.success('新增成功')
-    } else {
-      await areaUpdate(formData)
-      ElMessage.success('编辑成功')
-    }
-    dialogVisible.value = false
-    currentAreaData.value = {}
+  const handleDialogSubmit = () => {
     refreshData()
   }
 

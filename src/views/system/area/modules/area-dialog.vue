@@ -55,7 +55,7 @@
 <script setup lang="ts">
   import { ref, computed, watch, onMounted } from 'vue'
   import { ElMessage, ElForm, ElDialog, ElInputNumber, ElTreeSelect } from 'element-plus'
-  import { departmentTreeList } from '@/api/system-manage'
+  import { departmentTreeList, areaAdd, areaUpdate } from '@/api/system-manage'
 
   const props = defineProps({
     visible: {
@@ -75,7 +75,7 @@
 
   interface Emits {
     (e: 'update:visible', value: boolean): void
-    (e: 'submit', data: Api.SystemManage.AreaForm): void
+    (e: 'submit'): void
   }
 
   const emits = defineEmits<Emits>()
@@ -156,8 +156,19 @@
 
     const valid = await formRef.value.validate().catch(() => false)
     if (valid) {
-      emits('submit', formData.value)
-      handleClose()
+      try {
+        if (props.type === 'add') {
+          await areaAdd(formData.value)
+          ElMessage.success('新增成功')
+        } else {
+          await areaUpdate(formData.value)
+          ElMessage.success('编辑成功')
+        }
+        handleClose()
+        emits('submit')
+      } catch (error) {
+        console.error(error)
+      }
     } else {
       ElMessage.error('请填写完整信息')
     }
