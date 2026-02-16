@@ -335,6 +335,7 @@
       width: 280px;
       height: 100%;
       padding: 16px;
+      padding-right: 4px;
       background: #fff;
       border-radius: 8px;
 
