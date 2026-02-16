@@ -155,6 +155,13 @@ export function userBatchDelete(ids?: number[]) {
   })
 }
 
+// 获取所有区域列表（不分页）
+export function allAreaList() {
+  return request.get<Api.SystemManage.AreaListItem[]>({
+    url: '/sys/area/allList'
+  })
+}
+
 // 获取区域列表
 export function areaList(data?: Api.SystemManage.AreaSearchParams) {
   return request.post<Api.SystemManage.AreaList>({
@@ -190,6 +197,45 @@ export function areaDeleteById(id: number) {
 export function areaBatchDelete(ids?: number[]) {
   return request.del({
     url: '/sys/area/batchDelete',
+    data: ids
+  })
+}
+
+// 获取设备列表
+export function deviceList(data?: Api.SystemManage.DeviceSearchParams) {
+  return request.post<Api.SystemManage.DeviceList>({
+    url: '/sys/device/list',
+    data
+  })
+}
+
+// 新增设备
+export function deviceAdd(data: Api.SystemManage.DeviceForm) {
+  return request.post({
+    url: '/sys/device/add',
+    data
+  })
+}
+
+// 更新设备
+export function deviceUpdate(data: Api.SystemManage.DeviceForm) {
+  return request.put({
+    url: '/sys/device/update',
+    data
+  })
+}
+
+// 删除设备
+export function deviceDeleteById(id: number) {
+  return request.del({
+    url: `/sys/device/delete/${id}`
+  })
+}
+
+// 批量删除设备
+export function deviceBatchDelete(ids?: number[]) {
+  return request.del({
+    url: '/sys/device/batchDelete',
     data: ids
   })
 }

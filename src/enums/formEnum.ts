@@ -28,3 +28,16 @@ export enum GenderEnum {
   MALE = 'M',
   FEMALE = 'F'
 }
+
+/** 设备类型 */
+export enum DeviceTypeEnum {
+  CAMERA = 'CAMERA',
+  SENSOR = 'SENSOR'
+}
+
+/** 设备状态 */
+export enum DeviceStatusEnum {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
+  MAINTENANCE = 'MAINTENANCE'
+}
