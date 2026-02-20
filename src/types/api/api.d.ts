@@ -50,7 +50,7 @@ declare namespace Api {
 
     /** 分页响应基础结构 */
     interface PaginatedResponse<T = any> {
-      records: T[]
+      list: T[]
       current: number
       size: number
       total: number
@@ -279,5 +279,57 @@ declare namespace Api {
       Pick<DeviceListItem, 'deviceName' | 'deviceCode' | 'deviceType' | 'status' | 'areaId'> &
         Api.Common.CommonSearchParams
     >
+
+    /** 区域设备列表项（用于设备监控树） */
+    interface AreaDeviceListItem extends AreaListItem {
+      deviceList: DeviceListItem[]
+    }
+
+    /** 设备监控树节点 */
+    interface DeviceMonitorNode {
+      id: string
+      label: string
+      type: 'folder' | 'device'
+      deviceType?: DeviceType
+      children?: DeviceMonitorNode[]
+      [key: string]: any
+    }
+  }
+
+  /** 危害检测模块类型 */
+
+  namespace Detect {
+    type EventStreamList = Api.Common.PaginatedResponse<Api.Detect.EventStreamListItem>
+
+    /** 事件流搜索参数 */
+    type EventStreamSearchParams = Partial<
+      Pick<
+        EventStreamListItem,
+        | 'startTime'
+        | 'endTime'
+        | 'eventName'
+        | 'areaName'
+        | 'deviceId'
+        | 'deviceName'
+        | 'eventType'
+        | 'eventTypeName'
+      > &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 事件流列表项 */
+    interface EventStreamListItem {
+      id: number
+      eventName: string
+      eventType: string
+      confidence: number
+      createTime: string
+      areaId: number
+      deviceId: number
+      deviceName: string
+      location: string
+      areaName: string
+      eventTypeName: string
+    }
   }
 }

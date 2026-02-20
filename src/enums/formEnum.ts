@@ -41,3 +41,10 @@ export enum DeviceStatusEnum {
   OFFLINE = 'OFFLINE',
   MAINTENANCE = 'MAINTENANCE'
 }
+
+export enum EventStreamTypeEnum {
+  CAST = 'CAST',
+  FIRE = 'FIRE',
+  LANDSLIDE = 'LANDSLIDE',
+  TRAFFIC_ACCIDENT = 'TRAFFIC_ACCIDENT'
+}

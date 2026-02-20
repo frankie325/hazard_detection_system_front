@@ -1,69 +1,71 @@
 <template>
   <div class="event-stream-panel">
-    <div class="search-bar">
-      <el-input
-        v-model="searchKeyword"
-        placeholder="请输入设备名称/地点"
-        prefix-icon="Search"
-        clearable
-        style="width: 300px"
-      />
-      <el-select v-model="eventType" placeholder="全部类型" clearable style="width: 150px">
-        <el-option label="抛洒物" value="抛洒物" />
-        <el-option label="塌方" value="塌方" />
-        <el-option label="火灾" value="火灾" />
-        <el-option label="交通事故" value="交通事故" />
-      </el-select>
-    </div>
+    <EventStreamSearch v-model="searchForm" @search="handleSearch" @reset="handleReset" />
 
     <div class="event-groups">
-      <div v-for="group in groupedEvents" :key="group.day" class="event-group">
-        <div class="group-header">
-          <span class="group-title">{{ group.day }}</span>
-          <el-divider />
-        </div>
-        <div class="event-list">
-          <div
-            v-for="event in group.events"
-            :key="event.id"
-            class="event-item"
-            @click="showEventDetail(event)"
-          >
-            <div class="event-time">
-              {{ event.timestamp.split(' ')[1] }}
+      <template v-if="groupedEvents.length > 0">
+        <div v-for="group in groupedEvents" :key="group.day" class="event-group">
+          <div class="group-header">
+            <span class="group-title">{{ group.day }}</span>
+            <el-divider />
+          </div>
+          <div class="event-list">
+            <div
+              v-for="event in group.events"
+              :key="event.id"
+              class="event-item"
+              @click="showEventDetail(event)"
+            >
+              <div class="event-time">
+                {{ event.createTime.split(' ')[1] }}
+              </div>
+              <div class="event-info">
+                <div class="event-name">
+                  {{ event.eventName }}
+                  <el-tag
+                    :type="getEventTypeTag(event.eventTypeName)"
+                    size="small"
+                    class="event-type-tag"
+                  >
+                    {{ event.eventTypeName }}
+                  </el-tag>
+                </div>
+                <div class="event-detail">{{ event.deviceName }}</div>
+              </div>
+              <div class="event-confidence">
+                <ElProgress
+                  style="width: 250px"
+                  :percentage="Math.round(event.confidence * 100)"
+                  :color="getConfidenceColor(event.confidence)"
+                  :show-text="false"
+                  :stroke-width="6"
+                />
+
+                <span class="confidence-value">{{ Math.round(event.confidence * 100) }}%</span>
+              </div>
+              <el-icon class="arrow-right"><ArrowRight /></el-icon>
             </div>
-            <div class="event-info">
-              <div class="event-name">{{ event.eventType }}</div>
-              <div class="event-detail"> {{ event.eventName }} | {{ event.deviceName }} </div>
-            </div>
-            <div class="event-confidence">
-              <el-progress
-                :percentage="event.confidence"
-                :color="getConfidenceColor(event.confidence)"
-                :show-text="false"
-                :stroke-width="6"
-              />
-              <span class="confidence-value">{{ event.confidence }}%</span>
-            </div>
-            <el-icon class="arrow-right"><ArrowRight /></el-icon>
           </div>
         </div>
-      </div>
+      </template>
+      <el-empty v-else description="暂无数据" />
     </div>
 
     <!-- 事件详情弹窗 -->
     <el-dialog v-model="detailVisible" title="事件详情" width="500px" :before-close="closeDetail">
       <el-descriptions v-if="selectedEvent" :column="1" border>
         <el-descriptions-item label="事件名称">{{ selectedEvent.eventName }}</el-descriptions-item>
-        <el-descriptions-item label="类型">{{ selectedEvent.eventType }}</el-descriptions-item>
+        <el-descriptions-item label="类型">{{ selectedEvent.eventTypeName }}</el-descriptions-item>
         <el-descriptions-item label="位置">{{
           selectedEvent.location || device.location
         }}</el-descriptions-item>
-        <el-descriptions-item label="设备/摄像头">
-          {{ selectedEvent.deviceCode || device.code }}
-        </el-descriptions-item>
-        <el-descriptions-item label="置信度">{{ selectedEvent.confidence }}%</el-descriptions-item>
-        <el-descriptions-item label="发生时间">{{ selectedEvent.timestamp }}</el-descriptions-item>
+        <el-descriptions-item label="设备/摄像头">{{
+          selectedEvent.deviceName
+        }}</el-descriptions-item>
+        <el-descriptions-item label="置信度"
+          >{{ Math.round(selectedEvent.confidence * 100) }}%</el-descriptions-item
+        >
+        <el-descriptions-item label="发生时间">{{ selectedEvent.createTime }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
         <el-button @click="closeDetail">关闭</el-button>
@@ -73,59 +75,110 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { ref, computed, watch } from 'vue'
+  import { ElProgress, ElMessage } from 'element-plus'
   import { ArrowRight } from '@element-plus/icons-vue'
-
-  interface EventItem {
-    id: string
-    eventName: string
-    eventType: string
-    deviceId: string
-    deviceName: string
-    deviceCode?: string
-    location?: string
-    confidence: number
-    timestamp: string
-  }
+  import { eventStreamList } from '@/api/detect'
+  import EventStreamSearch from './event-stream-search.vue'
 
   interface Props {
     device: any
-    events: EventItem[]
   }
 
   const props = defineProps<Props>()
 
-  const searchKeyword = ref('')
-  const eventType = ref('')
+  const searchForm = ref({
+    eventName: '',
+    eventTypeName: ''
+  })
   const detailVisible = ref(false)
-  const selectedEvent = ref<EventItem | null>(null)
+  const selectedEvent = ref<Api.Detect.EventStreamListItem | null>(null)
+  const events = ref<Api.Detect.EventStreamListItem[]>([])
+  const loading = ref(false)
+
+  /**
+   * 处理搜索
+   */
+  const handleSearch = () => {
+    if (props.device?.id) {
+      loadDeviceEvents(Number(props.device.id))
+    }
+  }
+
+  /**
+   * 处理重置
+   */
+  const handleReset = () => {
+    if (props.device?.id) {
+      loadDeviceEvents(Number(props.device.id))
+    }
+  }
+
+  /**
+   * 加载设备事件流数据
+   */
+  const loadDeviceEvents = async (deviceId?: number) => {
+    if (!deviceId) return
+    loading.value = true
+    try {
+      const res = await eventStreamList({
+        current: 1,
+        size: 99999,
+        deviceId,
+        eventName: searchForm.value.eventName || undefined,
+        deviceName: searchForm.value.eventName || undefined,
+        eventTypeName: searchForm.value.eventTypeName || undefined
+      })
+      events.value = res.list || []
+    } catch {
+      ElMessage.error('加载事件流数据失败')
+      events.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 监听设备变化，重新加载数据
+   */
+  watch(
+    () => props.device?.id,
+    (newDeviceId) => {
+      if (newDeviceId) {
+        loadDeviceEvents(Number(newDeviceId))
+      }
+    },
+    { immediate: true }
+  )
 
   // 置信度颜色
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return '#67C23A'
-    if (confidence >= 80) return '#409EFF'
-    if (confidence >= 70) return '#E6A23C'
-    return '#F56C6C'
+    const percentage = Math.round(confidence * 100)
+    if (percentage >= 90) return '#F56C6C'
+    if (percentage >= 80) return '#E6A23C'
+    if (percentage >= 70) return '#409EFF'
+    return '#67C23A'
   }
 
-  // 过滤事件
-  const filteredEvents = computed(() => {
-    return props.events.filter((event) => {
-      const matchKeyword =
-        !searchKeyword.value ||
-        event.eventName.includes(searchKeyword.value) ||
-        event.deviceName.includes(searchKeyword.value)
-      const matchType = !eventType.value || event.eventType === eventType.value
-      return matchKeyword && matchType
-    })
-  })
+  /**
+   * 获取事件类型对应的Tag类型
+   */
+  const getEventTypeTag = (eventTypeName: string): 'danger' | 'warning' | 'primary' | 'info' => {
+    const typeMap: Record<string, 'danger' | 'warning' | 'primary' | 'info'> = {
+      火灾: 'danger',
+      塌方: 'warning',
+      交通事故: 'danger',
+      抛洒物: 'warning'
+    }
+    return typeMap[eventTypeName] || 'info'
+  }
 
   // 按日期分组
   const groupedEvents = computed(() => {
-    const groups: { [key: string]: EventItem[] } = {}
+    const groups: { [key: string]: Api.Detect.EventStreamListItem[] } = {}
 
-    filteredEvents.value.forEach((event) => {
-      const date = event.timestamp.split(' ')[0]
+    events.value.forEach((event) => {
+      const date = event.createTime.split(' ')[0]
       if (!groups[date]) {
         groups[date] = []
       }
@@ -159,7 +212,7 @@
   }
 
   // 显示事件详情
-  const showEventDetail = (event: EventItem) => {
+  const showEventDetail = (event: Api.Detect.EventStreamListItem) => {
     selectedEvent.value = event
     detailVisible.value = true
   }
@@ -173,24 +226,40 @@
 
 <style lang="scss" scoped>
   .event-stream-panel {
-    .search-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 
     .event-groups {
+      flex: 1;
+      padding-top: 12px;
+      padding-right: 4px;
+      overflow: auto;
+
       .event-group {
+        margin-bottom: 24px;
+
         .group-header {
           .group-title {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #909399;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+          }
+
+          .group-title::before {
+            width: 4px;
+            height: 16px;
+            content: '';
+            background: linear-gradient(to bottom, #409eff, #66b1ff);
+            border-radius: 2px;
           }
 
           :deep(.el-divider) {
-            margin: 8px 0;
+            margin: 12px 0;
           }
         }
 
@@ -208,14 +277,15 @@
 
             &:hover {
               border-color: #409eff;
-              box-shadow: 0 2px 12px rgb(64 158 255 / 10%);
+              box-shadow: 0 4px 16px rgb(64 158 255 / 15%);
+              transform: translateY(-2px);
             }
 
             .event-time {
               width: 100px;
-              font-size: 16px;
-              font-weight: 500;
-              color: #303133;
+              font-size: 18px;
+              font-weight: 600;
+              color: #409eff;
             }
 
             .event-info {
@@ -223,14 +293,22 @@
               margin-left: 16px;
 
               .event-name {
-                margin-bottom: 4px;
-                font-size: 16px;
-                font-weight: 500;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                margin-bottom: 6px;
+                font-size: 18px;
+                font-weight: 600;
                 color: #303133;
+
+                .event-type-tag {
+                  padding: 2px 8px;
+                  font-size: 12px;
+                }
               }
 
               .event-detail {
-                font-size: 14px;
+                font-size: 13px;
                 color: #909399;
               }
             }

@@ -162,6 +162,13 @@ export function allAreaList() {
   })
 }
 
+// 查询区域以及区域下的设备列表
+export function areaDeviceList() {
+  return request.get<Api.SystemManage.AreaDeviceListItem[]>({
+    url: '/sys/area/deviceList'
+  })
+}
+
 // 获取区域列表
 export function areaList(data?: Api.SystemManage.AreaSearchParams) {
   return request.post<Api.SystemManage.AreaList>({
