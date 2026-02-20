@@ -25,11 +25,14 @@
         <template #default="{ node, data }">
           <span class="custom-tree-node">
             <el-icon v-if="data.type === 'folder'"><Folder /></el-icon>
-            <el-icon v-else-if="data.deviceType === 'camera'"><VideoCamera /></el-icon>
+            <el-icon
+              v-else-if="data.deviceType === 'camera' || data.deviceType === DeviceTypeEnum.CAMERA"
+              ><VideoCamera
+            /></el-icon>
             <el-icon v-else><Monitor /></el-icon>
             <span class="node-label">{{ node.label }}</span>
             <span v-if="data.type === 'folder' && data.children" class="device-count">
-              {{ data.children.length }}台设备
+              {{ data.children?.length }}台设备
             </span>
           </span>
         </template>
@@ -40,7 +43,7 @@
     <div class="right-content">
       <el-empty v-if="!selectedDevice" description="请选择设备查看详情" />
 
-      <div v-else class="device-detail">
+      <div v-else class="device-detail h-full">
         <!-- Tab 切换 -->
         <el-tabs v-model="activeTab" type="border-card">
           <!-- 设备信息与控制 -->
@@ -49,18 +52,26 @@
           </el-tab-pane>
 
           <!-- 视频预览（仅摄像头） -->
-          <el-tab-pane v-if="selectedDevice.deviceType === 'camera'" label="视频预览" name="video">
+          <el-tab-pane
+            v-if="selectedDevice.deviceType === DeviceTypeEnum.CAMERA"
+            label="视频预览"
+            name="video"
+          >
             <VideoPreviewPanel :device="selectedDevice" />
           </el-tab-pane>
 
           <!-- 传感数据（仅传感器） -->
-          <el-tab-pane v-if="selectedDevice.deviceType === 'sensor'" label="传感数据" name="sensor">
+          <el-tab-pane
+            v-if="selectedDevice.deviceType === DeviceTypeEnum.SENSOR"
+            label="传感数据"
+            name="sensor"
+          >
             <SensorDataPanel :device="selectedDevice" :sensorData="mockSensorData" />
           </el-tab-pane>
 
           <!-- 检测事件流 -->
           <el-tab-pane label="检测事件流" name="events">
-            <EventStreamPanel :device="selectedDevice" :events="deviceEvents" />
+            <EventStreamPanel :device="selectedDevice" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -69,32 +80,69 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from 'vue'
+  import { ref, watch, onMounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { Folder, VideoCamera, Monitor } from '@element-plus/icons-vue'
   import DeviceInfoPanel from './modules/device-info-panel.vue'
   import VideoPreviewPanel from './modules/video-preview-panel.vue'
   import SensorDataPanel from './modules/sensor-data-panel.vue'
   import EventStreamPanel from './modules/event-stream-panel.vue'
+  import { areaDeviceList } from '@/api/system-manage'
+  import { DeviceTypeEnum } from '@/enums/formEnum'
 
   // 设备树数据
-  interface DeviceNode {
-    id: string
-    label: string
-    type: 'folder' | 'device'
-    deviceType?: 'camera' | 'sensor'
-    children?: DeviceNode[]
-    [key: string]: any
-  }
+  type DeviceNode = Api.SystemManage.DeviceMonitorNode
 
   const deviceTreeRef = ref()
   const searchText = ref('')
   const selectedDevice = ref<any>(null)
   const activeTab = ref('info')
 
+  // 加载设备树数据
+  const loadDeviceTreeData = async () => {
+    try {
+      const apiData = await areaDeviceList()
+      deviceTreeData.value = transformToTreeNodes(apiData)
+    } catch {
+      ElMessage.error('加载设备列表失败')
+    }
+  }
+
+  // 将API数据转换为树节点格式
+  const transformToTreeNodes = (data: Api.SystemManage.AreaDeviceListItem[]): DeviceNode[] => {
+    return data.map((item) => ({
+      id: String(item.id),
+      label: item.areaName,
+      type: 'folder' as const,
+      deviceType: undefined,
+      children: item.deviceList.map((device) => ({
+        id: String(device.id),
+        label: device.deviceName,
+        type: 'device' as const,
+        deviceType:
+          device.deviceType === DeviceTypeEnum.CAMERA
+            ? DeviceTypeEnum.CAMERA
+            : DeviceTypeEnum.SENSOR,
+        code: device.deviceCode,
+        ip: device.ipAddress,
+        model: device.model,
+        location: device.location,
+        status: device.status,
+        ipAddress: device.ipAddress,
+        deviceName: device.deviceName,
+        deviceCode: device.deviceCode,
+        areaId: device.areaId,
+        areaName: device.areaName
+      }))
+    }))
+  }
+
+  onMounted(() => {
+    loadDeviceTreeData()
+  })
+
   const treeProps = {
-    children: 'children',
-    label: 'label'
+    children: 'children'
   }
 
   // 过滤节点
@@ -107,6 +155,11 @@
     return data.label?.includes(value)
   }
 
+  // 设备树数据
+  const deviceTreeData = ref<DeviceNode[]>([])
+
+  // 假数据：传感数据
+
   // 点击节点
   const handleNodeClick = (data: DeviceNode) => {
     if (data.type === 'device') {
@@ -115,200 +168,12 @@
     }
   }
 
-  // 假数据：设备树
-  const deviceTreeData: DeviceNode[] = [
-    {
-      id: 'area-1',
-      label: '隧道A',
-      type: 'folder',
-      children: [
-        {
-          id: 'device-1',
-          label: '隧道A入口摄像头',
-          type: 'device',
-          deviceType: 'camera',
-          code: 'CAM-01',
-          ip: '192.168.1.10',
-          model: 'HIKVISION DS-2CD3T45',
-          location: '隧道A-入口',
-          status: 'online',
-          detectStatus: 'running'
-        },
-        {
-          id: 'device-2',
-          label: '隧道A火焰传感器4',
-          type: 'device',
-          deviceType: 'sensor',
-          code: 'FIRE-04',
-          ip: '192.168.1.11',
-          model: 'Honeywell FS-100',
-          location: '隧道A-出口',
-          status: 'online',
-          detectStatus: 'running'
-        }
-      ]
-    },
-    {
-      id: 'area-2',
-      label: '隧道B',
-      type: 'folder',
-      children: [
-        {
-          id: 'device-3',
-          label: '隧道B火焰传感器2',
-          type: 'device',
-          deviceType: 'sensor',
-          code: 'FIRE-02',
-          ip: '192.168.1.12',
-          model: 'Honeywell FS-100',
-          location: '隧道B-中部',
-          status: 'online',
-          detectStatus: 'running'
-        }
-      ]
-    },
-    {
-      id: 'area-3',
-      label: '桥梁D',
-      type: 'folder',
-      children: [
-        {
-          id: 'device-4',
-          label: '桥梁D南侧摄像头9',
-          type: 'device',
-          deviceType: 'camera',
-          code: 'CAM-09',
-          ip: '192.168.1.13',
-          model: 'HIKVISION DS-2CD3T45',
-          location: '桥梁D-南侧',
-          status: 'online',
-          detectStatus: 'running'
-        }
-      ]
-    },
-    {
-      id: 'area-4',
-      label: '路段C',
-      type: 'folder',
-      children: [
-        {
-          id: 'device-5',
-          label: '路段C应力传感器5',
-          type: 'device',
-          deviceType: 'sensor',
-          code: 'STRESS-05',
-          ip: '192.168.1.14',
-          model: 'Bently Nevada 3300',
-          location: '路段C-中段',
-          status: 'online',
-          detectStatus: 'running'
-        }
-      ]
-    },
-    {
-      id: 'area-5',
-      label: '路段E',
-      type: 'folder',
-      children: [
-        {
-          id: 'device-6',
-          label: '路段E地质传感器3',
-          type: 'device',
-          deviceType: 'sensor',
-          code: 'GEO-03',
-          ip: '192.168.1.15',
-          model: 'Trimble NetR9',
-          location: '路段E-匝道',
-          status: 'online',
-          detectStatus: 'running'
-        }
-      ]
-    },
-    {
-      id: 'area-6',
-      label: '路段F',
-      type: 'folder',
-      children: [
-        {
-          id: 'device-7',
-          label: '路段F上行摄像头11',
-          type: 'device',
-          deviceType: 'camera',
-          code: 'CAM-11',
-          ip: '192.168.1.16',
-          model: 'HIKVISION DS-2CD3T45',
-          location: '路段F-上行',
-          status: 'online',
-          detectStatus: 'running'
-        }
-      ]
-    }
-  ]
-
   // 假数据：传感数据
   const mockSensorData = ref({
     temperature: 28.6,
     vibration: 0.65,
     coConcentration: 14
   })
-
-  // 假数据：设备事件流
-  const deviceEvents = ref([
-    {
-      id: 'evt-1',
-      eventName: '火灾-CAM-01-114605',
-      eventType: '火灾',
-      deviceId: 'CAM-01',
-      deviceName: '隧道A入口摄像头',
-      confidence: 91,
-      timestamp: '2025-11-08 11:46:05'
-    },
-    {
-      id: 'evt-2',
-      eventName: '抛洒物-CAM-01-091233',
-      eventType: '抛洒物',
-      deviceId: 'CAM-01',
-      deviceName: '隧道A入口摄像头',
-      confidence: 88,
-      timestamp: '2025-11-08 09:12:33'
-    },
-    {
-      id: 'evt-3',
-      eventName: '抛洒物-CAM-01-162748',
-      eventType: '抛洒物',
-      deviceId: 'CAM-01',
-      deviceName: '隧道A入口摄像头',
-      confidence: 79,
-      timestamp: '2025-11-07 16:27:48'
-    },
-    {
-      id: 'evt-4',
-      eventName: '塌方-CAM-01-100219',
-      eventType: '塌方',
-      deviceId: 'CAM-01',
-      deviceName: '隧道A入口摄像头',
-      confidence: 73,
-      timestamp: '2025-11-07 10:02:19'
-    },
-    {
-      id: 'evt-5',
-      eventName: '交通事故-CAM-01-190311',
-      eventType: '交通事故',
-      deviceId: 'CAM-01',
-      deviceName: '隧道A入口摄像头',
-      confidence: 67,
-      timestamp: '2025-11-05 19:03:11'
-    },
-    {
-      id: 'evt-6',
-      eventName: '火灾-CAM-01-081554',
-      eventType: '火灾',
-      deviceId: 'CAM-01',
-      deviceName: '隧道A入口摄像头',
-      confidence: 92,
-      timestamp: '2025-11-05 08:15:54'
-    }
-  ])
 
   // 重启设备
   const handleRestart = async (device: any) => {
@@ -329,7 +194,7 @@
   .device-monitor-container {
     display: flex;
     gap: 16px;
-    height: calc(100vh - 100px);
+    height: calc(100vh - 104px);
     padding: 16px;
     background: #f5f5f5;
 
@@ -365,6 +230,7 @@
 
       .el-tree {
         flex: 1;
+        padding-right: 4px;
         overflow-y: auto;
       }
     }
@@ -385,6 +251,10 @@
         .el-tabs__content {
           flex: 1;
           overflow-y: auto;
+
+          .el-tab-pane {
+            height: 100%;
+          }
         }
       }
     }

@@ -4,14 +4,29 @@
       <el-descriptions-item label="设备名称">{{ device.label }}</el-descriptions-item>
       <el-descriptions-item label="设备编码">{{ device.code }}</el-descriptions-item>
       <el-descriptions-item label="设备类型">
-        {{ device.deviceType === 'camera' ? '摄像头' : '传感器' }}
+        {{ device.deviceType === DeviceTypeEnum.CAMERA ? '摄像头' : '传感器' }}
       </el-descriptions-item>
       <el-descriptions-item label="安装位置">{{ device.location }}</el-descriptions-item>
       <el-descriptions-item label="IP地址">{{ device.ip }}</el-descriptions-item>
       <el-descriptions-item label="型号">{{ device.model }}</el-descriptions-item>
       <el-descriptions-item label="在线状态">
-        <el-tag :type="device.status === 'online' ? 'success' : 'danger'" size="small">
-          {{ device.status === 'online' ? '在线' : '离线' }}
+        <el-tag
+          :type="
+            device.status === DeviceStatusEnum.ONLINE
+              ? 'success'
+              : device.status === DeviceStatusEnum.MAINTENANCE
+                ? 'warning'
+                : 'danger'
+          "
+          size="small"
+        >
+          {{
+            device.status === DeviceStatusEnum.ONLINE
+              ? '在线'
+              : device.status === DeviceStatusEnum.MAINTENANCE
+                ? '维护'
+                : '离线'
+          }}
         </el-tag>
       </el-descriptions-item>
       <el-descriptions-item label="检测状态">
@@ -33,6 +48,7 @@
 
 <script setup lang="ts">
   import { VideoPlay, VideoPause, Refresh } from '@element-plus/icons-vue'
+  import { DeviceTypeEnum, DeviceStatusEnum } from '@/enums/formEnum'
 
   interface Props {
     device: any
