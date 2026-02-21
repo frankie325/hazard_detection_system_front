@@ -48,3 +48,9 @@ export enum EventStreamTypeEnum {
   LANDSLIDE = 'LANDSLIDE',
   TRAFFIC_ACCIDENT = 'TRAFFIC_ACCIDENT'
 }
+export enum AlarmLevel {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  EMERGENCY = 'EMERGENCY'
+}
