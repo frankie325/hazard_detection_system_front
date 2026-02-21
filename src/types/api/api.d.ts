@@ -299,6 +299,8 @@ declare namespace Api {
   /** 危害检测模块类型 */
 
   namespace Detect {
+    type EventStreamTypeEnum = import('@/enums/formEnum').EventStreamTypeEnum
+
     type EventStreamList = Api.Common.PaginatedResponse<Api.Detect.EventStreamListItem>
 
     /** 事件流搜索参数 */
@@ -321,7 +323,7 @@ declare namespace Api {
     interface EventStreamListItem {
       id: number
       eventName: string
-      eventType: string
+      eventType: EventStreamTypeEnum
       confidence: number
       createTime: string
       areaId: number
@@ -330,6 +332,48 @@ declare namespace Api {
       location: string
       areaName: string
       eventTypeName: string
+    }
+  }
+
+  /** 告警模块类型 */
+
+  namespace Warning {
+    type EventStreamTypeEnum = import('@/enums/formEnum').EventStreamTypeEnum
+    type AlarmLevel = import('@/enums/formEnum').AlarmLevel
+
+    type AlarmRuleList = Api.Common.PaginatedResponse<Api.Warning.AlarmRuleListItem>
+
+    /** 告警规则搜索参数 */
+    type AlarmRuleSearchParams = Partial<
+      Pick<AlarmRuleListItem, 'ruleName' | 'eventType' | 'alarmLevel' | 'isEnabled'> &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 告警规则列表项 */
+    interface AlarmRuleListItem {
+      id: number
+      ruleName: string
+      eventType: EventStreamTypeEnum
+      matchCondition: Record<string, any>
+      alarmLevel: AlarmLevel
+      isEnabled: number
+      createTime: string
+      remark?: string
+    }
+
+    /** 告警规则表单 */
+    interface AlarmRuleForm {
+      id?: number
+      ruleName: string
+      eventType: EventStreamTypeEnum
+      matchCondition: {
+        confidence?: {
+          min?: number
+        }
+      }
+      alarmLevel: AlarmLevel
+      isEnabled: number
+      remark?: string
     }
   }
 }
