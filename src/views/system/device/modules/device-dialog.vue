@@ -29,6 +29,17 @@
         </ElSelect>
       </ElFormItem>
 
+      <ElFormItem label="应用规则" prop="alarmRuleId">
+        <ElSelect v-model="formData.alarmRuleId" placeholder="请选择应用规则">
+          <ElOption
+            v-for="item in alarmRuleOptions"
+            :key="item.id"
+            :label="item.ruleName"
+            :value="item.id"
+          />
+        </ElSelect>
+      </ElFormItem>
+
       <ElFormItem label="设备型号" prop="model">
         <ElInput
           v-model="formData.model"
@@ -66,6 +77,7 @@
   import { ElMessage, ElForm, ElDialog } from 'element-plus'
   import { DeviceTypeEnum } from '@/enums/formEnum'
   import { deviceAdd, deviceUpdate } from '@/api/system-manage'
+  import { allAlarmRule } from '@/api/warning'
 
   const props = defineProps({
     visible: {
@@ -106,6 +118,7 @@
   })
 
   const formRef = ref<InstanceType<typeof ElForm>>()
+  const alarmRuleOptions = ref<Api.Warning.AlarmRuleListItem[]>([])
   const formData = ref<Api.SystemManage.DeviceForm>({
     id: undefined,
     deviceName: '',
@@ -115,7 +128,8 @@
     location: '',
     ipAddress: '',
     areaId: 0,
-    areaName: ''
+    areaName: '',
+    alarmRuleId: 0
   })
 
   const areaNameText = computed(() => {
@@ -131,7 +145,17 @@
       { required: true, message: '请输入设备编码', trigger: 'blur' },
       { max: 32, message: '设备编码最多32个字符', trigger: 'blur' }
     ],
-    deviceType: [{ required: true, message: '请选择设备类型', trigger: 'change' }]
+    deviceType: [{ required: true, message: '请选择设备类型', trigger: 'change' }],
+    alarmRuleId: [{ required: true, message: '请选择应用规则', trigger: 'change' }]
+  }
+
+  const loadAlarmRuleOptions = async () => {
+    try {
+      const data = await allAlarmRule()
+      alarmRuleOptions.value = data || []
+    } catch (error) {
+      console.error('加载应用规则失败', error)
+    }
   }
 
   const title = computed(() => {
@@ -142,6 +166,7 @@
     () => props.visible,
     (newVal) => {
       if (newVal) {
+        loadAlarmRuleOptions()
         if (props.type === 'edit' && props.deviceData) {
           formData.value = { ...props.deviceData } as Api.SystemManage.DeviceForm
         } else {
@@ -154,7 +179,8 @@
             location: '',
             ipAddress: '',
             areaId: props.areaData?.id || 0,
-            areaName: props.areaData?.areaName || ''
+            areaName: props.areaData?.areaName || '',
+            alarmRuleId: undefined
           }
         }
         formRef.value?.clearValidate()
