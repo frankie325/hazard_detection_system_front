@@ -1,5 +1,13 @@
 import request from '@/utils/http'
 
+// 获取所有告警规则（不分页）
+export function allAlarmRule(data?: Api.Warning.AlarmRuleSearchParams) {
+  return request.get<Api.Warning.AlarmRuleListItem[]>({
+    url: '/alarm/rule/allList',
+    data
+  })
+}
+
 // 获取告警规则列表
 export function alarmRuleList(data?: Api.Warning.AlarmRuleSearchParams) {
   return request.post<Api.Warning.AlarmRuleList>({

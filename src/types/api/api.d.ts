@@ -272,6 +272,7 @@ declare namespace Api {
       ipAddress?: string
       areaId: number
       areaName: string
+      alarmRuleId: number | undefined
     }
 
     /** 设备搜索参数 */
