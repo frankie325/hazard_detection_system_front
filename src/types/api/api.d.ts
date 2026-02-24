@@ -341,6 +341,7 @@ declare namespace Api {
   namespace Warning {
     type EventStreamTypeEnum = import('@/enums/formEnum').EventStreamTypeEnum
     type AlarmLevel = import('@/enums/formEnum').AlarmLevel
+    type AlarmStatus = import('@/enums/formEnum').AlarmStatus
 
     type AlarmRuleList = Api.Common.PaginatedResponse<Api.Warning.AlarmRuleListItem>
 
@@ -375,6 +376,49 @@ declare namespace Api {
       alarmLevel: AlarmLevel
       isEnabled: number
       remark?: string
+    }
+
+    type AlarmMessageList = Api.Common.PaginatedResponse<Api.Warning.AlarmMessageListItem>
+
+    /** 告警消息搜索参数 */
+    type AlarmMessageSearchParams = Partial<
+      Pick<AlarmMessageListItem, 'alarmName' | 'alarmLevel' | 'eventType' | 'alarmStatus'> & {
+        startTime?: string
+        endTime?: string
+      } & Api.Common.CommonSearchParams
+    >
+
+    /** 告警消息列表项 */
+    interface AlarmMessageListItem {
+      id: number
+      alarmName: string
+      alarmLevel: AlarmLevel
+      eventType: EventStreamTypeEnum
+      deviceName: string
+      location: string
+      ruleName: string
+      createTime: string
+      updateTime: string
+      alarmStatus: AlarmStatus
+      closeTime?: string
+      closeReason?: string
+      processingResult?: string
+      confirmer?: string
+    }
+
+    /** 关闭告警参数 */
+    interface AlarmMessageCloseParams {
+      id: number
+      alarmStatus: AlarmStatus.CLOSED
+      closeReason?: string
+      processingResult?: string
+    }
+
+    /** 告警消息详情 */
+    interface AlarmMessageDetail extends AlarmMessageListItem {
+      deviceId: number
+      ruleId: number
+      confirmedBy?: number
     }
   }
 }

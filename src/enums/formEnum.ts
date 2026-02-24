@@ -54,3 +54,9 @@ export enum AlarmLevel {
   HIGH = 'HIGH',
   EMERGENCY = 'EMERGENCY'
 }
+
+export enum AlarmStatus {
+  OPEN = 'OPEN',
+  PROCESSING = 'PROCESSING',
+  CLOSED = 'CLOSED'
+}

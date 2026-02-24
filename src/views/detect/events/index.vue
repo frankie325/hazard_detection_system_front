@@ -1,6 +1,10 @@
 <template>
   <div class="art-full-height">
-    <EventsSearch v-model="searchForm" @search="handleSearch" @reset="handleReset"></EventsSearch>
+    <EventsSearch
+      v-model="searchForm"
+      @search="handleSearch"
+      @reset="resetSearchParams"
+    ></EventsSearch>
 
     <ElCard class="art-table-card art-full-height" shadow="never">
       <ArtTable
@@ -62,6 +66,7 @@
     loading,
     pagination,
     searchParams,
+    resetSearchParams,
     refreshData,
     handleSizeChange,
     handleCurrentChange,
@@ -131,18 +136,6 @@
    */
   const handleSearch = (params: Record<string, any>) => {
     Object.assign(searchParams, params)
-    refreshData()
-  }
-
-  const handleReset = () => {
-    searchForm.value = {
-      deviceName: undefined,
-      areaName: undefined,
-      eventName: undefined,
-      eventType: undefined,
-      startTime: undefined,
-      endTime: undefined
-    }
     refreshData()
   }
 
