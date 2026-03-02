@@ -421,4 +421,71 @@ declare namespace Api {
       confirmedBy?: number
     }
   }
+
+  namespace Emergency {
+    type AlarmLevel = import('@/enums/formEnum').AlarmLevel
+
+    /** 应急事件状态 */
+    type EmeEventStatus = import('@/enums/formEnum').EmeEventStatus
+
+    /** 应急事件类型 */
+    type DetectEventType = import('@/enums/formEnum').EventStreamTypeEnum
+
+    /** 事件时间轴类型 */
+    type TimelineType = import('@/enums/formEnum').TimelineType
+    /** 应急事件列表项 */
+    interface EventListItem {
+      id: number
+      eventName: string
+      eventLevel: AlarmLevel
+      eventType: DetectEventType
+      location: string
+      status: EmeEventStatus
+      receiverRoleId: number
+      alarmId: number
+      createTime: string
+      updateTime: string
+      deptId: number
+      deptName: string
+      eventLevelName: string
+      eventTypeName: string
+      statusName: string
+      receiverRoleName?: string
+    }
+
+    /** 时间线项 */
+    interface TimelineItem {
+      id: number
+      eventId: number
+      actionType: TimelineType
+      actionTypeName: string
+      actionText: string
+      departure?: string
+      destination?: string
+      operateTime: string
+      operateId: number
+      operatorName: string
+      remark?: string
+      createTime: string
+    }
+
+    /** 资源项 */
+    interface ResourceItem {
+      id: number
+      resourceName: string
+      num: number
+      createTime: string
+    }
+
+    /** 更新事件状态参数（统一接口） */
+    interface UpdateStatusParams {
+      eventId: number
+      actionType: ActionType
+      departure?: string
+      destination?: string
+      resourceIds?: number[]
+      receiverRoleId?: number
+      remark?: string
+    }
+  }
 }

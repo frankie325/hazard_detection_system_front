@@ -26,15 +26,15 @@ export const emergencyRoutes: AppRouteRecord = {
         title: 'menus.emergency.resourceBind',
         keepAlive: true
       }
-    },
-    {
-      path: 'report',
-      name: 'Report',
-      component: '/emergency/report',
-      meta: {
-        title: 'menus.emergency.report',
-        keepAlive: true
-      }
     }
+    // {
+    //   path: 'report',
+    //   name: 'Report',
+    //   component: '/emergency/report',
+    //   meta: {
+    //     title: 'menus.emergency.report',
+    //     keepAlive: true
+    //   }
+    // }
   ]
 }
