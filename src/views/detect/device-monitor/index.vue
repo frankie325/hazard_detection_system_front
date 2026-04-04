@@ -132,7 +132,8 @@
         deviceName: device.deviceName,
         deviceCode: device.deviceCode,
         areaId: device.areaId,
-        areaName: device.areaName
+        areaName: device.areaName,
+        videoUrl: device.videoUrl
       }))
     }))
   }

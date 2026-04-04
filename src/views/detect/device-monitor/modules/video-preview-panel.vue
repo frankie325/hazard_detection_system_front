@@ -1,6 +1,6 @@
 <template>
   <div class="video-preview-panel">
-    <div class="video-controls">
+    <!-- <div class="video-controls">
       <el-checkbox v-model="showLabels">显示标注</el-checkbox>
       <el-checkbox v-model="eventMute">事件提醒静音</el-checkbox>
       <div class="checkbox-group">
@@ -10,7 +10,7 @@
           <el-checkbox label="车辆" />
         </el-checkbox-group>
       </div>
-    </div>
+    </div> -->
 
     <div class="video-container">
       <div v-if="!isVideoOpen" class="video-placeholder">
@@ -20,13 +20,27 @@
       </div>
       <div v-else class="video-player">
         <div class="video-header">
-          <span class="video-title">检测预览: {{ device.label }}</span>
-          <el-tag type="success" size="small">检测中</el-tag>
+          <span class="video-title">检测预览: {{ device.deviceName }}</span>
+          <!-- <el-tag type="success" size="small">检测中</el-tag> -->
           <el-button type="danger" size="small" :icon="Close" @click="closeVideo"> 关闭 </el-button>
         </div>
         <div class="video-content">
-          <el-icon size="128" color="#67C23A"><CircleCheckFilled /></el-icon>
-          <p class="video-note">模拟视频流: {{ device.label }}</p>
+          <video
+            v-if="device.videoUrl"
+            ref="videoRef"
+            class="video-player-element"
+            :src="device.videoUrl"
+            autoplay
+            muted
+            controls
+            playsinline
+          >
+            您的浏览器不支持视频播放
+          </video>
+          <div v-else class="video-error">
+            <el-icon size="64" color="#F56C6C"><WarningFilled /></el-icon>
+            <p>视频链接不可用</p>
+          </div>
         </div>
       </div>
     </div>
@@ -35,17 +49,13 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { VideoCamera, VideoPlay, Close, CircleCheckFilled } from '@element-plus/icons-vue'
+  import { VideoCamera, VideoPlay, Close, WarningFilled } from '@element-plus/icons-vue'
 
   interface Props {
-    device: any
+    device: Api.SystemManage.DeviceListItem
   }
 
   defineProps<Props>()
-
-  const showLabels = ref(true)
-  const eventMute = ref(false)
-  const detectedTypes = ref(['抛洒物', '行人', '车辆'])
   const isVideoOpen = ref(false)
 
   const openVideo = () => {
@@ -116,15 +126,28 @@
 
         .video-content {
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
           height: 400px;
-          color: #67c23a;
+          background: #000;
 
-          .video-note {
-            margin-top: 16px;
-            font-size: 14px;
+          .video-player-element {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+          }
+
+          .video-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #f56c6c;
+
+            p {
+              margin-top: 16px;
+              font-size: 14px;
+            }
           }
         }
       }

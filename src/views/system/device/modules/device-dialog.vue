@@ -56,10 +56,6 @@
         />
       </ElFormItem>
 
-      <ElFormItem label="IP地址" prop="ipAddress">
-        <ElInput v-model="formData.ipAddress" placeholder="请输入IP地址，如:192.168.1.10" />
-      </ElFormItem>
-
       <ElFormItem label="所属区域" prop="areaName">
         <ElInput v-model="areaNameText" disabled placeholder="请先选择区域" />
       </ElFormItem>
@@ -126,7 +122,6 @@
     deviceType: DeviceTypeEnum.CAMERA,
     model: '',
     location: '',
-    ipAddress: '',
     areaId: 0,
     areaName: '',
     alarmRuleId: 0
@@ -177,7 +172,6 @@
             deviceType: DeviceTypeEnum.CAMERA,
             model: '',
             location: '',
-            ipAddress: '',
             areaId: props.areaData?.id || 0,
             areaName: props.areaData?.areaName || '',
             alarmRuleId: undefined

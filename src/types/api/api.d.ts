@@ -259,6 +259,8 @@ declare namespace Api {
       areaName: string
       createTime: string
       updateTime: string
+      fileId: number
+      videoUrl: string
     }
 
     /** 设备表单 */
@@ -269,7 +271,6 @@ declare namespace Api {
       deviceType: DeviceType
       model?: string
       location?: string
-      ipAddress?: string
       areaId: number
       areaName: string
       alarmRuleId: number | undefined

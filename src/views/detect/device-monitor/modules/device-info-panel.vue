@@ -1,13 +1,13 @@
 <template>
   <div class="device-info-panel">
     <el-descriptions title="设备信息" :column="2" border>
-      <el-descriptions-item label="设备名称">{{ device.label }}</el-descriptions-item>
-      <el-descriptions-item label="设备编码">{{ device.code }}</el-descriptions-item>
+      <el-descriptions-item label="设备名称">{{ device.deviceName }}</el-descriptions-item>
+      <el-descriptions-item label="设备编码">{{ device.deviceCode }}</el-descriptions-item>
       <el-descriptions-item label="设备类型">
         {{ device.deviceType === DeviceTypeEnum.CAMERA ? '摄像头' : '传感器' }}
       </el-descriptions-item>
       <el-descriptions-item label="安装位置">{{ device.location }}</el-descriptions-item>
-      <el-descriptions-item label="IP地址">{{ device.ip }}</el-descriptions-item>
+      <el-descriptions-item label="IP地址">{{ device.ipAddress }}</el-descriptions-item>
       <el-descriptions-item label="型号">{{ device.model }}</el-descriptions-item>
       <el-descriptions-item label="在线状态">
         <el-tag
@@ -35,33 +35,75 @@
     </el-descriptions>
 
     <div class="control-actions">
-      <el-button type="primary" :icon="VideoPlay">打开检测预览</el-button>
-      <el-button :icon="VideoPause">关闭检测预览</el-button>
-      <el-button type="warning" :icon="Refresh" @click="handleRestart">重启设备</el-button>
+      <el-button type="primary" :icon="VideoPlay" @click="openDetectPreview">
+        打开检测预览
+      </el-button>
     </div>
 
-    <el-alert title="注意" type="warning" :closable="false" show-icon style="margin-top: 16px">
-      摄像头的检测一直运行在后台服务中,而不是打开检测预览按钮去控制的,他只是让前端读取目标检测视频去展示。
-    </el-alert>
+    <!-- 目标检测预览弹窗 -->
+    <el-dialog
+      v-model="detectPreviewVisible"
+      title="检测预览"
+      width="900px"
+      :close-on-click-modal="false"
+      @close="closeDetectPreview"
+    >
+      <div class="detect-preview-container">
+        <div v-if="detectVideoUrl && detectPreviewVisible" class="video-wrapper">
+          <img
+            ref="detectImgRef"
+            :key="videoKey"
+            :src="detectVideoUrl"
+            alt="目标检测视频流"
+            class="detect-video"
+            decoding="async"
+          />
+        </div>
+        <div v-else class="video-placeholder">
+          <el-empty description="视频链接不可用" />
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { VideoPlay, VideoPause, Refresh } from '@element-plus/icons-vue'
+  import { ref, computed } from 'vue'
+  import { VideoPlay } from '@element-plus/icons-vue'
   import { DeviceTypeEnum, DeviceStatusEnum } from '@/enums/formEnum'
 
   interface Props {
-    device: any
+    device: Api.SystemManage.DeviceListItem
   }
 
   const props = defineProps<Props>()
 
-  const emit = defineEmits<{
-    restart: [device: any]
-  }>()
+  // 目标检测预览弹窗
+  const detectPreviewVisible = ref(false)
+  const videoKey = ref(Date.now())
+  const detectImgRef = ref<HTMLImageElement | null>(null)
 
-  const handleRestart = () => {
-    emit('restart', props.device)
+  // 构建目标检测视频流URL - MJPEG格式
+  const detectVideoUrl = computed(() => {
+    if (!props.device.videoUrl) return ''
+    return `/api/video/detect/stream?deviceId=${props.device.id}&videoUrl=${encodeURIComponent(props.device.videoUrl)}`
+  })
+
+  // 打开检测预览 - 使用MJPEG流
+  const openDetectPreview = () => {
+    if (!props.device.videoUrl) return
+    // 更新 key 强制重新加载视频
+    videoKey.value = Date.now()
+    detectPreviewVisible.value = true
+  }
+
+  // 关闭检测预览 - 主动终止MJPEG流连接
+  const closeDetectPreview = () => {
+    // 先将 img 的 src 置空，浏览器会主动终止 HTTP 长连接
+    if (detectImgRef.value) {
+      detectImgRef.value.src = ''
+    }
+    detectPreviewVisible.value = false
   }
 </script>
 
@@ -71,6 +113,36 @@
       display: flex;
       gap: 12px;
       margin-top: 24px;
+    }
+
+    .detect-preview-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      background: #000;
+
+      .video-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+
+        .detect-video {
+          max-width: 100%;
+          max-height: 600px;
+          object-fit: contain;
+        }
+      }
+
+      .video-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 400px;
+      }
     }
   }
 </style>

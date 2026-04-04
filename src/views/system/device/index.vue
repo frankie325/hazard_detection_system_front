@@ -191,11 +191,6 @@
           width: 120
         },
         {
-          prop: 'ipAddress',
-          label: 'IP地址',
-          width: 130
-        },
-        {
           prop: 'status',
           label: '状态',
           width: 100,
