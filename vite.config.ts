@@ -44,7 +44,11 @@ export default ({ mode }: { mode: string }) => {
         '@icons': resolvePath('src/assets/icons'),
         '@utils': resolvePath('src/utils'),
         '@stores': resolvePath('src/store'),
-        '@styles': resolvePath('src/assets/styles')
+        '@styles': resolvePath('src/assets/styles'),
+        '@dataview/datav-vue3': path.resolve(
+          __dirname,
+          'node_modules/@dataview/datav-vue3/es/index.mjs'
+        )
       }
     },
     build: {
