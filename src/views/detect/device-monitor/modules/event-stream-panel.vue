@@ -80,6 +80,7 @@
   import { ArrowRight } from '@element-plus/icons-vue'
   import { eventStreamList } from '@/api/detect'
   import EventStreamSearch from './event-stream-search.vue'
+  import { EventStreamTypeEnum } from '@/enums/formEnum'
 
   interface Props {
     device: any
@@ -87,9 +88,12 @@
 
   const props = defineProps<Props>()
 
-  const searchForm = ref({
+  const searchForm = ref<{
+    eventName: string
+    eventType: EventStreamTypeEnum | undefined
+  }>({
     eventName: '',
-    eventTypeName: ''
+    eventType: undefined
   })
   const detailVisible = ref(false)
   const selectedEvent = ref<Api.Detect.EventStreamListItem | null>(null)
@@ -126,8 +130,7 @@
         size: 99999,
         deviceId,
         eventName: searchForm.value.eventName || undefined,
-        deviceName: searchForm.value.eventName || undefined,
-        eventTypeName: searchForm.value.eventTypeName || undefined
+        eventType: searchForm.value.eventType || undefined
       })
       events.value = res.list || []
     } catch {
