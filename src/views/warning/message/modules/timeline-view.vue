@@ -25,13 +25,11 @@
                 <div class="content-row">
                   <div class="content-item">
                     <span class="label">告警等级</span>
-                    <ElTag :type="getLevelType(item.alarmLevel)" size="small">
-                      {{ getLevelLabel(item.alarmLevel) }}
-                    </ElTag>
+                    <AlarmLevelDot :level="item.alarmLevel" />
                   </div>
                   <div class="content-item">
                     <span class="label">告警分类</span>
-                    <ElTag size="small">{{ getEventTypeName(item.eventType) }}</ElTag>
+                    <EventTypeTag :type="item.eventType" />
                   </div>
                 </div>
                 <div class="content-row">
@@ -94,8 +92,10 @@
 </template>
 
 <script setup lang="ts">
-  import { AlarmLevel, AlarmStatus, EventStreamTypeEnum } from '@/enums/formEnum'
+  import { AlarmStatus } from '@/enums/formEnum'
   import { usePaginationOptions } from '@/hooks/common/usePaginationOptions'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import EventTypeTag from '@/components/event-type-tag/index.vue'
 
   defineOptions({ name: 'TimelineView' })
 
@@ -125,13 +125,6 @@
     emit('current-change', current)
   }
 
-  const levelMap: Record<AlarmLevel, { label: string; type: 'info' | 'warning' | 'danger' }> = {
-    [AlarmLevel.LOW]: { label: '低级', type: 'info' },
-    [AlarmLevel.MEDIUM]: { label: '中级', type: 'warning' },
-    [AlarmLevel.HIGH]: { label: '高级', type: 'danger' },
-    [AlarmLevel.EMERGENCY]: { label: '紧急', type: 'danger' }
-  }
-
   const statusMap: Record<AlarmStatus, { label: string; type: 'success' | 'warning' | 'info' }> = {
     [AlarmStatus.OPEN]: { label: '开启', type: 'success' },
     [AlarmStatus.PROCESSING]: { label: '处理中', type: 'warning' },
@@ -144,19 +137,9 @@
     [AlarmStatus.CLOSED]: '#909399'
   }
 
-  const eventTypeMap: Record<EventStreamTypeEnum, string> = {
-    [EventStreamTypeEnum.CAST]: '抛洒物',
-    [EventStreamTypeEnum.FIRE]: '火灾',
-    [EventStreamTypeEnum.LANDSLIDE]: '塌方',
-    [EventStreamTypeEnum.TRAFFIC_ACCIDENT]: '交通事故'
-  }
-
-  const getLevelLabel = (level: AlarmLevel) => levelMap[level]?.label || level
-  const getLevelType = (level: AlarmLevel) => levelMap[level]?.type || 'info'
   const getStatusLabel = (status: AlarmStatus) => statusMap[status]?.label || status
   const getStatusType = (status: AlarmStatus) => statusMap[status]?.type || 'info'
   const getTimelineColor = (status: AlarmStatus) => statusColorMap[status] || '#909399'
-  const getEventTypeName = (type: EventStreamTypeEnum) => eventTypeMap[type] || type
 </script>
 
 <style lang="scss" scoped>

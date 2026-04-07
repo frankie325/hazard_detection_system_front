@@ -23,7 +23,14 @@
         >
           <template #default="{ data }">
             <span class="custom-tree-node">
-              <span>{{ data.areaName }}</span>
+              <el-tooltip
+                :content="data.areaName"
+                placement="top"
+                :show-after="300"
+                :hide-after="0"
+              >
+                <span class="node-label">{{ data.areaName }}</span>
+              </el-tooltip>
               <span v-if="data.deviceCount" class="device-count">
                 {{ data.deviceCount }}台设备
               </span>
@@ -83,12 +90,14 @@
 </template>
 
 <script setup lang="ts">
+  import { h } from 'vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { deviceList, deviceDeleteById, deviceBatchDelete, allAreaList } from '@/api/system-manage'
   import DeviceSearch from './modules/device-search.vue'
   import DeviceDialog from './modules/device-dialog.vue'
-  import { ElMessageBox, ElTag, ElTree, ElMessage } from 'element-plus'
+  import { ElTooltip, ElTag, ElMessageBox, ElTree, ElMessage } from 'element-plus'
+  import { VideoCamera, Monitor } from '@element-plus/icons-vue'
   import { DialogType } from '@/types'
 
   defineOptions({ name: 'DeviceManage' })
@@ -173,11 +182,13 @@
           width: 100,
           formatter: (row) => {
             const typeMap = {
-              CAMERA: { text: '摄像头', type: 'primary' as const },
-              SENSOR: { text: '传感器', type: 'success' as const }
+              CAMERA: { icon: VideoCamera, text: '摄像头' },
+              SENSOR: { icon: Monitor, text: '传感器' }
             }
-            const config = typeMap[row.deviceType] || { text: '未知', type: 'info' as const }
-            return h(ElTag, { type: config.type }, () => config.text)
+            const config = typeMap[row.deviceType] || { icon: Monitor, text: '未知' }
+            return h(ElTooltip, { content: config.text, placement: 'top' }, () =>
+              h(config.icon, { width: 24, height: 24, style: { verticalAlign: 'middle' } })
+            )
           }
         },
         {
@@ -349,6 +360,14 @@
         align-items: center;
         justify-content: space-between;
         padding-right: 8px;
+
+        .node-label {
+          flex: 1;
+          width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
 
         .device-count {
           font-size: 12px;

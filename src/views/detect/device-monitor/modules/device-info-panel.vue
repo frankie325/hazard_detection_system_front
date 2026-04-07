@@ -1,55 +1,148 @@
 <template>
   <div class="device-info-panel">
-    <el-descriptions title="设备信息" :column="2" border>
-      <el-descriptions-item label="设备名称">{{ device.deviceName }}</el-descriptions-item>
-      <el-descriptions-item label="设备编码">{{ device.deviceCode }}</el-descriptions-item>
-      <el-descriptions-item label="设备类型">
-        {{ device.deviceType === DeviceTypeEnum.CAMERA ? '摄像头' : '传感器' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="安装位置">{{ device.location }}</el-descriptions-item>
-      <el-descriptions-item label="IP地址">{{ device.ipAddress }}</el-descriptions-item>
-      <el-descriptions-item label="型号">{{ device.model }}</el-descriptions-item>
-      <el-descriptions-item label="在线状态">
-        <el-tag
-          :type="
-            device.status === DeviceStatusEnum.ONLINE
-              ? 'success'
-              : device.status === DeviceStatusEnum.MAINTENANCE
-                ? 'warning'
-                : 'danger'
-          "
-          size="small"
-        >
-          {{
-            device.status === DeviceStatusEnum.ONLINE
-              ? '在线'
-              : device.status === DeviceStatusEnum.MAINTENANCE
-                ? '维护'
-                : '离线'
-          }}
-        </el-tag>
-      </el-descriptions-item>
-      <el-descriptions-item label="检测状态">
-        <el-tag type="success" size="small">检测已开启</el-tag>
-      </el-descriptions-item>
-    </el-descriptions>
+    <!-- 上半部分：视频预览区（仅摄像头类型显示） -->
+    <div v-if="isCamera" class="video-section">
+      <div class="video-header">
+        <div class="video-title-group">
+          <span class="video-title">{{ device.deviceName }}</span>
+          <!-- 直播状态指示器 -->
+          <span v-if="isVideoOpen" class="live-indicator">
+            <span class="live-dot" />
+            <span class="live-text">LIVE</span>
+          </span>
+          <!-- <span v-else class="offline-indicator">
+            <span class="offline-dot" />
+            <span class="offline-text">OFFLINE</span>
+          </span> -->
+        </div>
+        <div class="video-actions">
+          <el-button
+            v-if="!isVideoOpen"
+            type="primary"
+            size="small"
+            :icon="VideoPlay"
+            @click="openVideo"
+          >
+            打开实时画面
+          </el-button>
+          <template v-else>
+            <el-button size="small" :icon="FullScreen" @click="openDetectPreview">
+              检测预览
+            </el-button>
+            <el-button type="danger" size="small" :icon="Close" @click="closeVideo">
+              关闭
+            </el-button>
+          </template>
+        </div>
+      </div>
 
-    <div class="control-actions">
-      <el-button type="primary" :icon="VideoPlay" @click="openDetectPreview">
-        打开检测预览
-      </el-button>
+      <div class="video-container">
+        <!-- 未开启状态 -->
+        <div v-if="!isVideoOpen" class="video-placeholder">
+          <el-icon size="56" color="#606266"><VideoCamera /></el-icon>
+          <p>点击上方按钮开启实时画面，后台检测持续运行</p>
+        </div>
+        <!-- 视频播放中 -->
+        <div v-else class="video-wrapper">
+          <video
+            v-if="device.videoUrl"
+            ref="videoRef"
+            class="video-element"
+            :src="device.videoUrl"
+            autoplay
+            muted
+            controls
+            playsinline
+          >
+            您的浏览器不支持视频播放
+          </video>
+          <div v-else class="video-error">
+            <el-icon size="56" color="#F56C6C"><WarningFilled /></el-icon>
+            <p>视频链接不可用</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 目标检测预览弹窗 -->
+    <!-- 下半部分：设备信息 + 控制操作 -->
+    <div class="info-section">
+      <el-descriptions title="设备信息" :column="3" border size="small">
+        <el-descriptions-item label="设备名称">{{ device.deviceName }}</el-descriptions-item>
+        <el-descriptions-item label="设备编码">{{ device.deviceCode }}</el-descriptions-item>
+        <el-descriptions-item label="设备类型">
+          {{ isCamera ? '摄像头' : '传感器' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="安装位置">{{ device.location || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="型号">{{ device.model || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="在线状态">
+          <el-tag
+            :type="
+              device.status === DeviceStatusEnum.ONLINE
+                ? 'success'
+                : device.status === DeviceStatusEnum.MAINTENANCE
+                  ? 'warning'
+                  : 'danger'
+            "
+            size="small"
+          >
+            {{
+              device.status === DeviceStatusEnum.ONLINE
+                ? '在线'
+                : device.status === DeviceStatusEnum.MAINTENANCE
+                  ? '维护'
+                  : '离线'
+            }}
+          </el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <!-- 控制操作按钮（仅摄像头显示检测预览入口，传感器不显示） -->
+      <button
+        v-if="isCamera"
+        class="mt-[16px] rounded-lg relative w-[140px] h-[40px] cursor-pointer flex items-center border border-[var(--el-color-primary)] bg-[var(--el-color-primary)] group hover:bg-[var(--el-color-primary)] active:bg-[var(--el-color-primary)] active:border-[var(--el-color-primary)]"
+        :disabled="!device.videoUrl"
+        @click="openDetectPreview"
+      >
+        <span
+          class="text-white font-semibold ml-8 transform group-hover:translate-x-[50%] transition-all duration-300"
+          >检测预览</span
+        >
+        <span
+          class="absolute right-0 h-full w-10 rounded-lg bg-[var(--el-color-primary)] flex items-center justify-center transform group-hover:translate-x-0 group-hover:w-full transition-all duration-300"
+        >
+          <el-icon size="20" color="white"><VideoPlay /></el-icon>
+
+          <!-- <svg
+            class="svg w-8 text-white"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <line x1="12" x2="12" y1="5" y2="19"></line>
+            <line x1="5" x2="19" y1="12" y2="12"></line>
+          </svg> -->
+        </span>
+      </button>
+    </div>
+
+    <!-- 目标检测预览弹窗 — 视频充满整个内容区域 -->
     <el-dialog
       v-model="detectPreviewVisible"
-      title="检测预览"
-      width="900px"
+      title="目标检测预览"
+      width="90%"
       :close-on-click-modal="false"
+      :close-on-press-escape="true"
+      destroy-on-close
       @close="closeDetectPreview"
     >
-      <div class="detect-preview-container">
-        <div v-if="detectVideoUrl && detectPreviewVisible" class="video-wrapper">
+      <div ref="detectContainerRef" class="detect-preview-container">
+        <div v-if="detectVideoUrl && detectPreviewVisible" class="detect-video-wrapper">
           <img
             ref="detectImgRef"
             :key="videoKey"
@@ -57,10 +150,21 @@
             alt="目标检测视频流"
             class="detect-video"
             decoding="async"
+            @loadstart="onImageLoadStart"
+            @load="onImageLoaded"
+            @error="onImageError"
           />
+          <!-- 加载中遮罩 -->
+          <div v-if="isImageLoading" class="detect-loading-mask">
+            <el-icon class="is-loading" :size="32" color="#fff"><Loading /></el-icon>
+            <span class="loading-text">视频流加载中...</span>
+          </div>
+          <div class="detect-video-badge">MJPEG 检测流</div>
+          <!-- 全屏按钮 -->
+          <el-icon class="detect-fullscreen-btn" @click="toggleFullscreen"><FullScreen /></el-icon>
         </div>
-        <div v-else class="video-placeholder">
-          <el-empty description="视频链接不可用" />
+        <div v-else class="detect-placeholder">
+          <el-empty description="视频链接不可用，请确认设备视频地址已配置" />
         </div>
       </div>
     </el-dialog>
@@ -68,8 +172,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
-  import { VideoPlay } from '@element-plus/icons-vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import {
+    VideoPlay,
+    VideoCamera,
+    Close,
+    FullScreen,
+    WarningFilled,
+    Loading
+  } from '@element-plus/icons-vue'
   import { DeviceTypeEnum, DeviceStatusEnum } from '@/enums/formEnum'
 
   interface Props {
@@ -78,71 +189,341 @@
 
   const props = defineProps<Props>()
 
-  // 目标检测预览弹窗
+  // 是否是摄像头设备
+  const isCamera = computed(() => props.device.deviceType === DeviceTypeEnum.CAMERA)
+
+  // ===== 实时视频预览（原始 videoUrl） =====
+  const isVideoOpen = ref(false)
+  const videoRef = ref<HTMLVideoElement | null>(null)
+
+  const openVideo = () => {
+    isVideoOpen.value = true
+  }
+
+  const closeVideo = () => {
+    // 停止原生 video 播放
+    if (videoRef.value) {
+      videoRef.value.pause()
+      videoRef.value.src = ''
+    }
+    isVideoOpen.value = false
+  }
+
+  // ===== 目标检测预览弹窗（MJPEG 流） =====
   const detectPreviewVisible = ref(false)
   const videoKey = ref(Date.now())
   const detectImgRef = ref<HTMLImageElement | null>(null)
+  const detectContainerRef = ref<HTMLDivElement | null>(null)
+  const isFullscreen = ref(false)
+  const isImageLoading = ref(true)
 
-  // 构建目标检测视频流URL - MJPEG格式
   const detectVideoUrl = computed(() => {
     if (!props.device.videoUrl) return ''
     return `/api/video/detect/stream?deviceId=${props.device.id}&videoUrl=${encodeURIComponent(props.device.videoUrl)}`
   })
 
-  // 打开检测预览 - 使用MJPEG流
   const openDetectPreview = () => {
     if (!props.device.videoUrl) return
-    // 更新 key 强制重新加载视频
     videoKey.value = Date.now()
+    isImageLoading.value = true
     detectPreviewVisible.value = true
   }
 
-  // 关闭检测预览 - 主动终止MJPEG流连接
   const closeDetectPreview = () => {
-    // 先将 img 的 src 置空，浏览器会主动终止 HTTP 长连接
     if (detectImgRef.value) {
       detectImgRef.value.src = ''
     }
     detectPreviewVisible.value = false
   }
+
+  // MJPEG 流加载状态
+  const onImageLoadStart = () => {
+    isImageLoading.value = true
+  }
+
+  const onImageLoaded = () => {
+    isImageLoading.value = false
+  }
+
+  const onImageError = () => {
+    isImageLoading.value = false
+  }
+
+  // 全屏切换
+  const toggleFullscreen = () => {
+    if (!detectContainerRef.value) return
+    if (!document.fullscreenElement) {
+      detectContainerRef.value.requestFullscreen()
+      isFullscreen.value = true
+    } else {
+      document.exitFullscreen()
+      isFullscreen.value = false
+    }
+  }
+
+  // 监听全屏变化事件，同步状态
+  const onFullscreenChange = () => {
+    isFullscreen.value = !!document.fullscreenElement
+  }
+  onMounted(() => document.addEventListener('fullscreenchange', onFullscreenChange))
+  onUnmounted(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
 </script>
 
 <style lang="scss" scoped>
   .device-info-panel {
-    .control-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+  }
 
-    .detect-preview-container {
+  /* ===== 上半部分：视频区 ===== */
+  .video-section {
+    flex-shrink: 0;
+
+    .video-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-height: 400px;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #1a1a1a;
+      border-radius: 8px 8px 0 0;
+
+      .video-title-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        .video-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: #fff;
+        }
+
+        /* 直播状态 - 红色圆点 + LIVE 文字 */
+        .live-indicator {
+          display: inline-flex;
+          gap: 6px;
+          align-items: center;
+          padding: 2px 10px;
+          background: rgb(34 197 94 / 20%);
+          border-radius: 4px;
+
+          .live-dot {
+            position: relative;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+
+            // 外圈呼吸扩散动画
+            &::before {
+              position: absolute;
+              inset: -3px;
+              content: '';
+              background: rgb(34 197 94 / 40%);
+              border-radius: 50%;
+              animation: livePulse 2s ease-in-out infinite;
+            }
+          }
+
+          .live-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #22c55e;
+            letter-spacing: 1px;
+          }
+        }
+
+        /* 离线状态 - 灰色圆点 */
+        .offline-indicator {
+          display: inline-flex;
+          gap: 6px;
+          align-items: center;
+          padding: 2px 10px;
+          background: rgb(144 147 153 / 20%);
+          border-radius: 4px;
+
+          .offline-dot {
+            width: 8px;
+            height: 8px;
+            background: #606266;
+            border-radius: 50%;
+          }
+
+          .offline-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #909399;
+            letter-spacing: 1px;
+          }
+        }
+
+        @keyframes livePulse {
+          0% {
+            opacity: 0.8;
+            transform: scale(0.8);
+          }
+
+          50% {
+            opacity: 0;
+            transform: scale(1.8);
+          }
+
+          100% {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+        }
+      }
+
+      .video-actions {
+        display: flex;
+        gap: 8px;
+      }
+    }
+
+    .video-container {
+      overflow: hidden;
       background: #000;
+      border-radius: 0 0 8px 8px;
+
+      .video-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 340px;
+        color: #909399;
+
+        p {
+          margin-top: 12px;
+          font-size: 13px;
+        }
+      }
 
       .video-wrapper {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 100%;
-        height: 100%;
+        height: 340px;
 
-        .detect-video {
-          max-width: 100%;
-          max-height: 600px;
+        .video-element {
+          width: 100%;
+          height: 100%;
           object-fit: contain;
         }
+
+        .video-error {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+          color: #f56c6c;
+
+          p {
+            margin-top: 12px;
+            font-size: 13px;
+          }
+        }
+      }
+    }
+  }
+
+  /* ===== 下半部分：设备信息 + 控制 ===== */
+  .info-section {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  /* ===== 检测预览弹窗 ===== */
+  .detect-preview-container {
+    .detect-video-wrapper {
+      position: relative;
+      width: 100%;
+      height: 75vh;
+      background: #000;
+
+      .detect-video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
 
-      .video-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        min-height: 400px;
+      .detect-video-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: #fff;
+        background: rgb(0 0 0 / 60%);
+        border-radius: 4px;
       }
+    }
+
+    .detect-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 75vh;
+      background: #000;
+      border-radius: 4px;
+    }
+  }
+
+  /* 弹窗内容区去除内边距，让视频完全撑满 */
+  :deep(.el-dialog__body) {
+    padding: 0;
+  }
+
+  /* 检测视频区域内的全屏按钮 */
+  .detect-fullscreen-btn {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 10;
+    font-size: 22px;
+    color: rgb(255 255 255 / 70%);
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      transform 0.2s;
+
+    &:hover {
+      color: #fff;
+      transform: scale(1.15);
+    }
+  }
+
+  /* MJPEG 流加载遮罩 */
+  .detect-loading-mask {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 60%);
+
+    .loading-text {
+      font-size: 14px;
+      color: rgb(255 255 255 / 80%);
+    }
+  }
+
+  /* 全屏状态下视频铺满整个屏幕 */
+  .detect-preview-container:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+
+    .detect-video-wrapper {
+      height: 100vh;
     }
   }
 </style>

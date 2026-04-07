@@ -30,7 +30,9 @@
               ><VideoCamera
             /></el-icon>
             <el-icon v-else><Monitor /></el-icon>
-            <span class="node-label">{{ node.label }}</span>
+            <el-tooltip :content="node.label" placement="top" :show-after="300" :hide-after="0">
+              <span class="node-label">{{ node.label }}</span>
+            </el-tooltip>
             <span v-if="data.type === 'folder' && data.children" class="device-count">
               {{ data.children?.length }}台设备
             </span>
@@ -46,18 +48,9 @@
       <div v-else class="device-detail h-full">
         <!-- Tab 切换 -->
         <el-tabs v-model="activeTab" type="border-card">
-          <!-- 设备信息与控制 -->
+          <!-- 设备信息与控制（含视频预览） -->
           <el-tab-pane label="设备信息与控制" name="info">
             <DeviceInfoPanel :device="selectedDevice" @restart="handleRestart" />
-          </el-tab-pane>
-
-          <!-- 视频预览（仅摄像头） -->
-          <el-tab-pane
-            v-if="selectedDevice.deviceType === DeviceTypeEnum.CAMERA"
-            label="视频预览"
-            name="video"
-          >
-            <VideoPreviewPanel :device="selectedDevice" />
           </el-tab-pane>
 
           <!-- 传感数据（仅传感器） -->
@@ -84,7 +77,6 @@
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { Folder, VideoCamera, Monitor } from '@element-plus/icons-vue'
   import DeviceInfoPanel from './modules/device-info-panel.vue'
-  import VideoPreviewPanel from './modules/video-preview-panel.vue'
   import SensorDataPanel from './modules/sensor-data-panel.vue'
   import EventStreamPanel from './modules/event-stream-panel.vue'
   import { areaDeviceList } from '@/api/system-manage'
@@ -221,6 +213,10 @@
 
         .node-label {
           flex: 1;
+          width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .device-count {

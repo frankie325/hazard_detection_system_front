@@ -20,9 +20,7 @@
         </div>
         <div class="info-item">
           <span class="label">事件等级：</span>
-          <ElTag :type="getLevelType(event.eventLevel)" size="small">
-            {{ event.eventLevelName }}
-          </ElTag>
+          <AlarmLevelDot :level="event.eventLevel" />
         </div>
         <div class="info-item">
           <span class="label">事件类型：</span>
@@ -42,8 +40,9 @@
 </template>
 
 <script setup lang="ts">
-  import { AlarmLevel, TimelineType } from '@/enums/formEnum'
+  import { TimelineType } from '@/enums/formEnum'
   import { updateStatus } from '@/api/emergency'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
 
   defineOptions({ name: 'ConfirmDialog' })
 
@@ -66,15 +65,6 @@
   })
 
   const loading = ref(false)
-
-  const levelMap: Record<AlarmLevel, { label: string; type: 'info' | 'warning' | 'danger' }> = {
-    [AlarmLevel.LOW]: { label: '低级', type: 'info' },
-    [AlarmLevel.MEDIUM]: { label: '中级', type: 'warning' },
-    [AlarmLevel.HIGH]: { label: '高级', type: 'danger' },
-    [AlarmLevel.EMERGENCY]: { label: '紧急', type: 'danger' }
-  }
-
-  const getLevelType = (level: AlarmLevel) => levelMap[level]?.type || 'info'
 
   const handleConfirm = async () => {
     if (!props.event) return

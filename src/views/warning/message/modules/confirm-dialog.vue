@@ -20,9 +20,7 @@
         </div>
         <div class="info-item">
           <span class="label">告警等级：</span>
-          <ElTag :type="getLevelType(alarmData.alarmLevel)" size="small">
-            {{ getLevelLabel(alarmData.alarmLevel) }}
-          </ElTag>
+          <AlarmLevelDot :level="alarmData.alarmLevel" />
         </div>
         <div class="info-item">
           <span class="label">发生时间：</span>
@@ -54,9 +52,9 @@
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
-  import { AlarmLevel } from '@/enums/formEnum'
   import { alarmMessageConfirm } from '@/api/warning'
   import { departmentTreeList } from '@/api/system-manage'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
 
   defineOptions({ name: 'ConfirmDialog' })
 
@@ -92,16 +90,6 @@
   const rules = reactive<FormRules>({
     deptId: [{ required: true, message: '请选择处置部门', trigger: 'change' }]
   })
-
-  const levelMap: Record<AlarmLevel, { label: string; type: 'info' | 'warning' | 'danger' }> = {
-    [AlarmLevel.LOW]: { label: '低级', type: 'info' },
-    [AlarmLevel.MEDIUM]: { label: '中级', type: 'warning' },
-    [AlarmLevel.HIGH]: { label: '高级', type: 'danger' },
-    [AlarmLevel.EMERGENCY]: { label: '紧急', type: 'danger' }
-  }
-
-  const getLevelLabel = (level: AlarmLevel) => levelMap[level]?.label || level
-  const getLevelType = (level: AlarmLevel) => levelMap[level]?.type || 'info'
 
   // 加载部门列表
   const loadDepartmentList = async () => {

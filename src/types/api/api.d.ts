@@ -357,6 +357,7 @@ declare namespace Api {
       id: number
       ruleName: string
       eventType: EventStreamTypeEnum
+      eventTypeName: string
       matchCondition: Record<string, any>
       alarmLevel: AlarmLevel
       isEnabled: number

@@ -26,17 +26,17 @@
             @click="handleSelectEvent(event)"
           >
             <div class="event-header">
-              <span class="event-type">{{ event.eventName }}</span>
-              <ElTag :type="getLevelType(event.eventLevel)" size="small">
-                {{ event.eventLevelName }}
-              </ElTag>
+              <EventTypeTag :type="event.eventType" :label="event.eventTypeName" />
+              <AlarmLevelDot :level="event.eventLevel" />
             </div>
             <div class="event-location">{{ event.location }}</div>
             <div class="event-footer">
               <span class="event-time">{{ formatTime(event.createTime) }}</span>
-              <ElTag :type="getStatusType(event.status)" size="small" effect="plain">
-                {{ event.statusName }}
-              </ElTag>
+              <span
+                class="event-status-text"
+                :class="'status-' + getStatusColorClass(event.status)"
+                >{{ event.statusName }}</span
+              >
             </div>
           </div>
           <ElEmpty v-if="filteredEvents.length === 0" description="暂无事件" />
@@ -51,9 +51,7 @@
         <div class="detail-header">
           <div class="header-left">
             <span class="event-name">{{ selectedEvent.eventName }}</span>
-            <ElTag :type="getLevelType(selectedEvent.eventLevel)">
-              {{ selectedEvent.eventLevelName }}
-            </ElTag>
+            <AlarmLevelDot :level="selectedEvent.eventLevel" />
           </div>
           <div class="header-right">
             <span class="create-time">发生时间: {{ formatTime(selectedEvent.createTime) }}</span>
@@ -134,7 +132,7 @@
 <script setup lang="ts">
   import { Search, Loading } from '@element-plus/icons-vue'
   import { ElMessageBox } from 'element-plus'
-  import { EmeEventStatus, AlarmLevel, TimelineType } from '@/enums/formEnum'
+  import { EmeEventStatus, TimelineType } from '@/enums/formEnum'
   import { eventList, eventDetail, updateStatus } from '@/api/emergency'
   import EventInfo from './modules/event-info.vue'
   import EventTimeline from './modules/event-timeline.vue'
@@ -142,6 +140,8 @@
   import CloseDialog from './modules/close-dialog.vue'
   import NoteDialog from './modules/note-dialog.vue'
   import { useUserStore } from '@/store/modules/user'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import EventTypeTag from '@/components/event-type-tag/index.vue'
 
   defineOptions({ name: 'EventCenter' })
 
@@ -171,27 +171,16 @@
     )
   })
 
-  // 获取等级标签类型
-  const getLevelType = (level: AlarmLevel) => {
-    const map: Record<AlarmLevel, 'info' | 'warning' | 'danger'> = {
-      [AlarmLevel.LOW]: 'info',
-      [AlarmLevel.MEDIUM]: 'warning',
-      [AlarmLevel.HIGH]: 'danger',
-      [AlarmLevel.EMERGENCY]: 'danger'
+  // 格式化时间
+  const getStatusColorClass = (status: EmeEventStatus) => {
+    const map: Record<EmeEventStatus, string> = {
+      [EmeEventStatus.START]: 'green',
+      [EmeEventStatus.CONFIRMED]: 'blue',
+      [EmeEventStatus.DISPATCHING]: 'orange',
+      [EmeEventStatus.PROCESSING]: 'green',
+      [EmeEventStatus.CLOSED]: 'gray'
     }
-    return map[level] || 'info'
-  }
-
-  // 获取状态标签类型
-  const getStatusType = (status: EmeEventStatus) => {
-    const map: Record<EmeEventStatus, 'info' | 'warning' | 'success' | 'primary' | 'danger'> = {
-      [EmeEventStatus.START]: 'success',
-      [EmeEventStatus.CONFIRMED]: 'primary',
-      [EmeEventStatus.DISPATCHING]: 'warning',
-      [EmeEventStatus.PROCESSING]: 'success',
-      [EmeEventStatus.CLOSED]: 'info'
-    }
-    return map[status] || 'info'
+    return map[status] || 'gray'
   }
 
   // 格式化时间
@@ -380,6 +369,8 @@
         margin-bottom: 8px;
 
         .event-type {
+          display: flex;
+          align-items: center;
           font-size: 14px;
           font-weight: 500;
           color: var(--el-text-color-primary);
@@ -400,6 +391,54 @@
         .event-time {
           font-size: 12px;
           color: var(--el-text-color-placeholder);
+        }
+
+        .event-status-text {
+          display: inline-flex;
+          gap: 4px;
+          align-items: center;
+          font-size: 12px;
+          font-weight: 500;
+
+          // &::before {
+          //   display: inline-block;
+          //   width: 6px;
+          //   height: 6px;
+          //   border-radius: 50%;
+          //   content: '';
+          // }
+
+          &.status-green::before {
+            background: #67c23a;
+          }
+
+          &.status-blue::before {
+            background: #409eff;
+          }
+
+          &.status-orange::before {
+            background: #e6a23c;
+          }
+
+          &.status-gray::before {
+            background: #909399;
+          }
+
+          &.status-green {
+            color: #67c23a;
+          }
+
+          &.status-blue {
+            color: #409eff;
+          }
+
+          &.status-orange {
+            color: #e6a23c;
+          }
+
+          &.status-gray {
+            color: #909399;
+          }
         }
       }
     }

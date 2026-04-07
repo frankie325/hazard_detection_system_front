@@ -42,12 +42,20 @@
 
 <script setup lang="ts">
   import { ref, h } from 'vue'
-  import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
+  import { ElMessageBox, ElMessage, ElSwitch } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
-  import { alarmRuleList, alarmRuleBatchDelete, alarmRuleDeleteById } from '@/api/warning'
+  import {
+    alarmRuleList,
+    alarmRuleBatchDelete,
+    alarmRuleDeleteById,
+    alarmRuleUpdate
+  } from '@/api/warning'
   import { AlarmLevel } from '@/enums/formEnum'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import EventTypeTag from '@/components/event-type-tag/index.vue'
   import RuleSearch from './modules/rule-search.vue'
   import RuleEditDialog from './modules/rule-edit-dialog.vue'
 
@@ -90,14 +98,7 @@
           label: '危害类型',
           width: 120,
           formatter: (row: Api.Warning.AlarmRuleListItem) => {
-            const eventTypeMap: Record<string, string> = {
-              CAST: '抛洒物',
-              FIRE: '火灾',
-              LANDSLIDE: '塌方',
-              TRAFFIC_ACCIDENT: '交通事故'
-            }
-            const typeName = eventTypeMap[row.eventType] || row.eventType
-            return h(ElTag, { size: 'small' }, () => typeName)
+            return h(EventTypeTag, { type: row.eventType, label: row.eventTypeName })
           }
         },
         {
@@ -105,20 +106,7 @@
           label: '告警等级',
           width: 100,
           formatter: (row: Api.Warning.AlarmRuleListItem) => {
-            const levelMap: Record<
-              AlarmLevel,
-              { label: string; type: 'success' | 'info' | 'warning' | 'danger' }
-            > = {
-              [AlarmLevel.LOW]: { label: '低级', type: 'info' },
-              [AlarmLevel.MEDIUM]: { label: '中级', type: 'warning' },
-              [AlarmLevel.HIGH]: { label: '高级', type: 'danger' },
-              [AlarmLevel.EMERGENCY]: { label: '紧急', type: 'danger' }
-            }
-            const level = levelMap[row.alarmLevel as AlarmLevel] || {
-              label: row.alarmLevel,
-              type: 'info'
-            }
-            return h(ElTag, { type: level.type, size: 'small' }, () => level.label)
+            return h(AlarmLevelDot, { level: row.alarmLevel as AlarmLevel })
           }
         },
         {
@@ -135,9 +123,14 @@
           width: 100,
           formatter: (row: Api.Warning.AlarmRuleListItem) => {
             const enabled = row.isEnabled === 1
-            return h(ElTag, { type: enabled ? 'success' : 'info', size: 'small' }, () =>
-              enabled ? '启用' : '禁用'
-            )
+            return h(ElSwitch, {
+              modelValue: enabled,
+              inlinePrompt: true,
+              activeText: '启用',
+              inactiveText: '禁用',
+              loading: !!switchLoadingMap.value[row.id],
+              onChange: () => handleToggleEnabled(row)
+            })
           }
         },
         { prop: 'createTime', label: '创建时间', width: 170 },
@@ -236,5 +229,29 @@
    */
   const handleSelectionChange = (rows: Api.Warning.AlarmRuleListItem[]) => {
     selectedRows.value = rows
+  }
+
+  // 记录各行的 switch loading 状态
+  const switchLoadingMap = ref<Record<number, boolean>>({})
+
+  /**
+   * 切换规则启用/禁用状态
+   */
+  const handleToggleEnabled = async (row: Api.Warning.AlarmRuleListItem) => {
+    const newEnabled = row.isEnabled === 1 ? 0 : 1
+    switchLoadingMap.value[row.id] = true
+    try {
+      await alarmRuleUpdate({
+        id: row.id,
+        isEnabled: newEnabled
+      } as any)
+      row.isEnabled = newEnabled
+      ElMessage.success(newEnabled ? '已启用' : '已禁用')
+    } catch (error) {
+      console.error('状态切换失败:', error)
+    } finally {
+      switchLoadingMap.value[row.id] = false
+      refreshData()
+    }
   }
 </script>

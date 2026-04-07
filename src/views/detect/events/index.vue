@@ -42,12 +42,13 @@
 
 <script setup lang="ts">
   import { ref, h } from 'vue'
-  import { ElProgress, ElTag } from 'element-plus'
+  import { ElProgress } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import { eventStreamList } from '@/api/detect'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import EventsSearch from './modules/events-search.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import EventTypeTag from '@/components/event-type-tag/index.vue'
 
   defineOptions({ name: 'Events' })
 
@@ -86,7 +87,7 @@
           label: '类型',
           width: 100,
           formatter: (row: Api.Detect.EventStreamListItem) => {
-            return h(ElTag, { type: 'info' }, row.eventTypeName)
+            return h(EventTypeTag, { type: row.eventType, label: row.eventTypeName })
           }
         },
         { prop: 'deviceName', label: '设备', width: 120 },

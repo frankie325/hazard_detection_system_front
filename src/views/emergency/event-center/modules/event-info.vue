@@ -4,17 +4,15 @@
     <ElDescriptions :column="2" border>
       <ElDescriptionsItem label="事件名称">{{ event?.eventName }}</ElDescriptionsItem>
       <ElDescriptionsItem label="事件等级">
-        <ElTag :type="getLevelType(event?.eventLevel)" size="small">
-          {{ event?.eventLevelName }}
-        </ElTag>
+        <AlarmLevelDot v-if="event?.eventLevel" :level="event.eventLevel" />
       </ElDescriptionsItem>
       <ElDescriptionsItem label="事件类型">
-        <ElTag size="small">{{ event?.eventTypeName }}</ElTag>
+        <EventTypeTag :type="event?.eventType" :label="event?.eventTypeName" />
       </ElDescriptionsItem>
       <ElDescriptionsItem label="事件状态">
-        <ElTag :type="getStatusType(event?.status)" size="small">
-          {{ event?.statusName }}
-        </ElTag>
+        <span class="info-text" :class="'status-' + getStatusColorClass(event?.status)">{{
+          event?.statusName
+        }}</span>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="地点">{{ event?.location }}</ElDescriptionsItem>
       <ElDescriptionsItem label="处置部门">{{ event?.deptName }}</ElDescriptionsItem>
@@ -25,7 +23,9 @@
 </template>
 
 <script setup lang="ts">
-  import { AlarmLevel, EmeEventStatus } from '@/enums/formEnum'
+  import { EmeEventStatus } from '@/enums/formEnum'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import EventTypeTag from '@/components/event-type-tag/index.vue'
 
   defineOptions({ name: 'EventInfo' })
 
@@ -35,32 +35,44 @@
 
   defineProps<Props>()
 
-  const getLevelType = (level?: AlarmLevel) => {
-    if (!level) return 'info'
-    const map: Record<AlarmLevel, 'info' | 'warning' | 'danger'> = {
-      [AlarmLevel.LOW]: 'info',
-      [AlarmLevel.MEDIUM]: 'warning',
-      [AlarmLevel.HIGH]: 'danger',
-      [AlarmLevel.EMERGENCY]: 'danger'
+  const getStatusColorClass = (status?: EmeEventStatus) => {
+    if (!status) return 'gray'
+    const map: Record<EmeEventStatus, string> = {
+      [EmeEventStatus.START]: 'green',
+      [EmeEventStatus.CONFIRMED]: 'blue',
+      [EmeEventStatus.DISPATCHING]: 'orange',
+      [EmeEventStatus.PROCESSING]: 'green',
+      [EmeEventStatus.CLOSED]: 'gray'
     }
-    return map[level] || 'info'
-  }
-
-  const getStatusType = (status?: EmeEventStatus) => {
-    if (!status) return 'info'
-    const map: Record<EmeEventStatus, 'info' | 'warning' | 'success' | 'primary' | 'danger'> = {
-      [EmeEventStatus.START]: 'info',
-      [EmeEventStatus.CONFIRMED]: 'primary',
-      [EmeEventStatus.DISPATCHING]: 'warning',
-      [EmeEventStatus.PROCESSING]: 'success',
-      [EmeEventStatus.CLOSED]: 'danger'
-    }
-    return map[status] || 'info'
+    return map[status] || 'gray'
   }
 </script>
 
 <style lang="scss" scoped>
   .event-info {
     padding: 20px;
+
+    .info-text {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      font-size: 13px;
+
+      &.status-green {
+        color: #67c23a;
+      }
+
+      &.status-blue {
+        color: #409eff;
+      }
+
+      &.status-orange {
+        color: #e6a23c;
+      }
+
+      &.status-gray {
+        color: #909399;
+      }
+    }
   }
 </style>

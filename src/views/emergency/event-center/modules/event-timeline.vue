@@ -12,9 +12,9 @@
         >
           <ElCard shadow="hover">
             <div class="timeline-header">
-              <ElTag :type="getTimelineTagType(item.actionType)" size="small">
+              <span class="timeline-type" :class="'type-' + getTimelineColorClass(item.actionType)">
                 {{ getTimelineTypeName(item.actionType) }}
-              </ElTag>
+              </span>
               <span class="operator">{{ item.operatorName }}</span>
             </div>
             <div class="timeline-content">{{ item.actionText }}</div>
@@ -70,19 +70,19 @@
     CLOSED: '#F56C6C'
   }
 
-  // 标签类型映射
-  const tagTypeMap: Record<TimelineType, 'info' | 'primary' | 'success' | 'warning' | 'danger'> = {
-    CONFIRM: 'primary',
-    BIND: 'success',
-    SIGN: 'warning',
-    REMARK: 'info',
-    ATTACHMENT: 'info',
-    CLOSED: 'danger'
-  }
-
   const getTimelineTypeName = (type: TimelineType) => typeNameMap[type] || type
   const getTimelineColor = (type: TimelineType) => typeColorMap[type] || '#909399'
-  const getTimelineTagType = (type: TimelineType) => tagTypeMap[type] || 'info'
+  const getTimelineColorClass = (type: TimelineType) => {
+    const map: Record<TimelineType, string> = {
+      CONFIRM: 'blue',
+      BIND: 'green',
+      SIGN: 'orange',
+      REMARK: 'gray',
+      ATTACHMENT: 'gray',
+      CLOSED: 'red'
+    }
+    return map[type] || 'gray'
+  }
 
   // 加载时间线
   const loadTimeline = async () => {
@@ -123,6 +123,62 @@
       gap: 12px;
       align-items: center;
       margin-bottom: 8px;
+
+      .timeline-type {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 500;
+
+        &::before {
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          content: '';
+          border-radius: 50%;
+        }
+
+        &.type-blue::before {
+          background: #409eff;
+        }
+
+        &.type-green::before {
+          background: #67c23a;
+        }
+
+        &.type-orange::before {
+          background: #e6a23c;
+        }
+
+        &.type-gray::before {
+          background: #909399;
+        }
+
+        &.type-red::before {
+          background: #f56c6c;
+        }
+
+        &.type-blue {
+          color: #409eff;
+        }
+
+        &.type-green {
+          color: #67c23a;
+        }
+
+        &.type-orange {
+          color: #e6a23c;
+        }
+
+        &.type-gray {
+          color: #909399;
+        }
+
+        &.type-red {
+          color: #f56c6c;
+        }
+      }
 
       .operator {
         font-size: 13px;

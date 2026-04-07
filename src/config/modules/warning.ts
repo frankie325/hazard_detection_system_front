@@ -16,6 +16,26 @@
 import { EventStreamTypeEnum, AlarmLevel } from '@/enums/formEnum'
 
 /**
+ * 事件类型 Iconify 图标名称映射
+ */
+export const eventTypeIconNameMap: Record<EventStreamTypeEnum, string> = {
+  [EventStreamTypeEnum.CAST]: 'mdi:package-variant-closed',
+  [EventStreamTypeEnum.FIRE]: 'mdi:fire',
+  [EventStreamTypeEnum.LANDSLIDE]: 'mdi:landslide',
+  [EventStreamTypeEnum.TRAFFIC_ACCIDENT]: 'mdi:car-emergency'
+}
+
+/**
+ * 事件类型颜色映射
+ */
+export const eventTypeColorMap: Record<EventStreamTypeEnum, string> = {
+  [EventStreamTypeEnum.CAST]: '#E6A23C',
+  [EventStreamTypeEnum.FIRE]: '#F56C6C',
+  [EventStreamTypeEnum.LANDSLIDE]: '#909399',
+  [EventStreamTypeEnum.TRAFFIC_ACCIDENT]: '#409EFF'
+}
+
+/**
  * 事件类型选项
  */
 export const eventTypeOptions = [
@@ -34,6 +54,20 @@ export const alarmLevelOptions = [
   { label: '高级', value: AlarmLevel.HIGH },
   { label: '紧急', value: AlarmLevel.EMERGENCY }
 ]
+
+/**
+ * 告警等级圆点样式映射（圆点颜色 + 文字颜色）
+ * - 低级：蓝色
+ * - 中级：橙色
+ * - 高级：红色
+ * - 紧急：深紫红色
+ */
+export const alarmLevelDotMap: Record<AlarmLevel, { label: string; color: string }> = {
+  [AlarmLevel.LOW]: { label: '低级', color: '#409EFF' },
+  [AlarmLevel.MEDIUM]: { label: '中级', color: '#E6A23C' },
+  [AlarmLevel.HIGH]: { label: '高级', color: '#F56C6C' },
+  [AlarmLevel.EMERGENCY]: { label: '紧急', color: '#8B0000' }
+}
 
 /**
  * 是否启用选项

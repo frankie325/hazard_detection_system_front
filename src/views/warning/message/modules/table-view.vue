@@ -34,8 +34,10 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { AlarmLevel, AlarmStatus, EventStreamTypeEnum } from '@/enums/formEnum'
+  import { AlarmLevel, AlarmStatus } from '@/enums/formEnum'
   import type { ColumnOption } from '@/types'
+  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import EventTypeTag from '@/components/event-type-tag/index.vue'
 
   defineOptions({ name: 'TableView' })
 
@@ -78,20 +80,7 @@
       label: '告警等级',
       width: 100,
       formatter: (row: Api.Warning.AlarmMessageListItem) => {
-        const levelMap: Record<
-          AlarmLevel,
-          { label: string; type: 'success' | 'info' | 'warning' | 'danger' }
-        > = {
-          [AlarmLevel.LOW]: { label: '低级', type: 'info' },
-          [AlarmLevel.MEDIUM]: { label: '中级', type: 'warning' },
-          [AlarmLevel.HIGH]: { label: '高级', type: 'danger' },
-          [AlarmLevel.EMERGENCY]: { label: '紧急', type: 'danger' }
-        }
-        const level = levelMap[row.alarmLevel as AlarmLevel] || {
-          label: row.alarmLevel,
-          type: 'info'
-        }
-        return h(ElTag, { type: level.type, size: 'small' }, () => level.label)
+        return h(AlarmLevelDot, { level: row.alarmLevel as AlarmLevel })
       }
     },
     {
@@ -99,14 +88,7 @@
       label: '告警分类',
       width: 120,
       formatter: (row: Api.Warning.AlarmMessageListItem) => {
-        const eventTypeMap: Record<EventStreamTypeEnum, string> = {
-          [EventStreamTypeEnum.CAST]: '抛洒物',
-          [EventStreamTypeEnum.FIRE]: '火灾',
-          [EventStreamTypeEnum.LANDSLIDE]: '塌方',
-          [EventStreamTypeEnum.TRAFFIC_ACCIDENT]: '交通事故'
-        }
-        const typeName = eventTypeMap[row.eventType as EventStreamTypeEnum] || row.eventType
-        return h(ElTag, { size: 'small' }, () => typeName)
+        return h(EventTypeTag, { type: row.eventType })
       }
     },
     { prop: 'deviceName', label: '发生设备', width: 120 },

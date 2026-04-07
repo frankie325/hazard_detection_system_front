@@ -42,10 +42,7 @@
         </div>
       </ElFormItem>
       <ElFormItem label="是否启用" prop="isEnabled">
-        <ElRadioGroup v-model="form.isEnabled">
-          <ElRadio :value="1">启用</ElRadio>
-          <ElRadio :value="0">禁用</ElRadio>
-        </ElRadioGroup>
+        <ElSwitch v-model="switchValue" inline-prompt active-text="启用" inactive-text="禁用" />
       </ElFormItem>
       <ElFormItem label="备注" prop="remark">
         <ElInput v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注" />
@@ -101,6 +98,16 @@
    * 匹配条件的JSON字符串
    */
   const matchConditionStr = ref('')
+
+  /**
+   * ElSwitch 绑定值（boolean ↔ isEnabled 1/0）
+   */
+  const switchValue = computed({
+    get: () => form.value.isEnabled === 1,
+    set: (val: boolean) => {
+      form.value.isEnabled = val ? 1 : 0
+    }
+  })
 
   /**
    * 显示控制
