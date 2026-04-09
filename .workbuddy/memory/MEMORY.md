@@ -1,0 +1,1 @@
+- [API Types Location](api-types-location.md) — Business type definitions in Api namespace
