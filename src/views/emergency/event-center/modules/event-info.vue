@@ -24,8 +24,8 @@
 
 <script setup lang="ts">
   import { EmeEventStatus } from '@/enums/formEnum'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
-  import EventTypeTag from '@/components/event-type-tag/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
 
   defineOptions({ name: 'EventInfo' })
 

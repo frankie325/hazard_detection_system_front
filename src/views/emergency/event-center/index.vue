@@ -140,8 +140,8 @@
   import CloseDialog from './modules/close-dialog.vue'
   import NoteDialog from './modules/note-dialog.vue'
   import { useUserStore } from '@/store/modules/user'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
-  import EventTypeTag from '@/components/event-type-tag/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
 
   defineOptions({ name: 'EventCenter' })
 

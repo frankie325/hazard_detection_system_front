@@ -48,7 +48,7 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import EventsSearch from './modules/events-search.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import EventTypeTag from '@/components/event-type-tag/index.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
 
   defineOptions({ name: 'Events' })
 

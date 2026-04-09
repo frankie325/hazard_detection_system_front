@@ -54,8 +54,8 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
-  import EventTypeTag from '@/components/event-type-tag/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
   import RuleSearch from './modules/rule-search.vue'
   import RuleEditDialog from './modules/rule-edit-dialog.vue'
 

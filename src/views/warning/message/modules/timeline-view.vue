@@ -94,8 +94,8 @@
 <script setup lang="ts">
   import { AlarmStatus } from '@/enums/formEnum'
   import { usePaginationOptions } from '@/hooks/common/usePaginationOptions'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
-  import EventTypeTag from '@/components/event-type-tag/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
 
   defineOptions({ name: 'TimelineView' })
 

@@ -35,7 +35,7 @@
 
   const props = defineProps<Props>()
 
-  const levelConfig = computed(() => alarmLevelDotMap[props.level])
+  const levelConfig = computed(() => (props.level ? alarmLevelDotMap[props.level] : null))
 
   /** 默认显示标签 */
   const label = computed(() => props.label || levelConfig.value?.label || props.level)

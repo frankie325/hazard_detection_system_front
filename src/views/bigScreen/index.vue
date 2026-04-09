@@ -5,7 +5,7 @@
       <!-- 左侧信息 -->
       <div class="header-left">
         <button class="back-button" @click="goBack">
-          <Icon icon="ant-design:left-outlined" :size="16" />
+          <Icon icon="ant-design:left-outlined" :size="14" />
           <span class="ml-[4px]">返回</span>
         </button>
       </div>
@@ -62,191 +62,72 @@
       <div class="map-area">
         <BaseMap
           :api-key="txMapKey"
-          :center="{ lat: 39.95, lng: 116.4 }"
+          :center="mapCenter"
           :zoom="10"
           :options="{ mapStyleId: '' }"
           :control="{ zoom: false, scale: false, rotation: false }"
+          view-mode="3D"
           class="tencent-map"
         >
-          <MultiMarker :styles="markerStyles" :geometries="markerGeometries" />
+          <MultiMarker
+            :styles="markerStyles"
+            :geometries="markerGeometries"
+            :onClick="handleMarkerClick"
+          />
           <MultiLabel :styles="labelStyles" :geometries="labelGeometries" />
+
+          <!-- 检测视频弹窗（跟随点位） -->
+          <DomOverlay
+            v-if="activePopup"
+            :position="activePopup.position"
+            :offset="{ x: 0, y: -50 }"
+          >
+            <div class="alert-popup">
+              <div class="popup-header">
+                <span class="popup-dot"></span>
+                <span class="popup-title">{{
+                  activePopup.device.deviceName || activePopup.device.deviceCode
+                }}</span>
+                <span class="popup-rec">REC</span>
+                <button class="popup-close" @click="activePopup = null">×</button>
+              </div>
+              <div class="popup-info">
+                <span class="popup-info-label">Location / GPS</span>
+                <span class="popup-info-value"
+                  >{{ activePopup.device.coordinate?.[0] }},
+                  {{ activePopup.device.coordinate?.[1] }}</span
+                >
+              </div>
+              <div class="popup-video">
+                <DetectVideoContent :device="activePopup.device" />
+              </div>
+            </div>
+          </DomOverlay>
         </BaseMap>
-        <!-- 告警摄像头弹窗 -->
-        <div class="alert-popup" :style="{ left: '42%', top: '35%' }">
-          <div class="popup-header">
-            <span class="popup-dot"></span>
-            <span class="popup-title">Live Alert: CAM-0421</span>
-            <span class="popup-rec">14:22:15 REC</span>
-          </div>
-          <div class="popup-info">
-            <span class="popup-info-label">Location / GPS</span>
-            <span class="popup-info-value">K125+200 [31.23°N 121.47°E]</span>
-          </div>
-          <div class="popup-video">
-            <div class="popup-video-placeholder">
-              <Icon icon="ant-design:video-camera-outlined" :size="32" color="#A6ABB8" />
-              <span>监控画面</span>
-            </div>
-            <div class="popup-video-overlay">
-              <div class="detect-tag tag-vehicle">VEHICLE [ID: 942] 0.98</div>
-              <div class="detect-tag tag-vehicle">VEHICLE [ID: 945] 0.96</div>
-            </div>
-          </div>
-        </div>
-        <!-- 底部状态栏 -->
-        <!-- <div class="center-status-bar">
-          <div class="status-badge badge-green">
-            <span class="badge-dot"></span>
-            <span>全线畅通</span>
-          </div>
-          <div class="status-badge badge-orange">
-            <span class="badge-dot"></span>
-            <span>局部拥堵</span>
-          </div>
-          <div class="status-badge badge-red">
-            <span class="badge-dot"></span>
-            <span>严重警报</span>
-          </div>
-        </div> -->
       </div>
 
       <!-- 左侧面板 -->
-      <aside class="panel-left">
-        <!-- 今日实时概览 -->
-        <BorderBox8 :reverse="true" class="panel-section metrics-panel">
-          <div class="section-header">
-            <span class="section-dot"></span>
-            <h3 class="section-title">今日实时概览</h3>
-          </div>
-          <div class="metrics-main">
-            <div class="metric-highlight">
-              <span class="metric-trend">12%</span>
-              <span class="metric-value">1,284</span>
-              <span class="metric-label">总告警量</span>
-            </div>
-          </div>
-          <div class="metrics-row">
-            <div class="metric-card">
-              <span class="metric-card-value text-blue">2,856</span>
-              <span class="metric-card-label">设备数</span>
-            </div>
-            <div class="metric-card">
-              <span class="metric-card-value text-cyan">42</span>
-              <span class="metric-card-label">待处理告警</span>
-            </div>
-            <div class="metric-card">
-              <span class="metric-card-value text-red">08</span>
-              <span class="metric-card-label">活跃应急事件</span>
-            </div>
-          </div>
-        </BorderBox8>
-
-        <!-- 告警等级分布 -->
-        <BorderBox13 class="panel-section alert-level-panel">
-          <div class="section-header">
-            <span class="section-dot"></span>
-            <h3 class="section-title">告警等级分布</h3>
-          </div>
-          <div class="alert-level-chart">
-            <div ref="alertLevelChartRef" class="chart-container"></div>
-            <div class="confidence-ring">
-              <div ref="confidenceChartRef" class="chart-container-sm"></div>
-            </div>
-          </div>
-        </BorderBox13>
-
-        <!-- 灾害类型分布 -->
-        <BorderBox6 class="panel-section hazard-type-panel">
-          <div class="section-header">
-            <span class="section-dot"></span>
-            <h3 class="section-title">灾害类型分布</h3>
-          </div>
-          <div class="hazard-list">
-            <div class="hazard-item" v-for="item in hazardTypes" :key="item.name">
-              <span class="hazard-name">{{ item.name }}</span>
-              <div class="hazard-bar-track">
-                <div class="hazard-bar-fill" :style="{ width: item.percent + '%' }"></div>
-              </div>
-              <span class="hazard-count">{{ item.count }}</span>
-            </div>
-          </div>
-        </BorderBox6>
-      </aside>
+      <LeftPanel ref="leftPanelRef" />
 
       <!-- 右侧面板 -->
-      <aside class="panel-right">
-        <!-- 实时告警动态 -->
-        <BorderBox8 class="panel-section alert-list-panel">
-          <div class="section-header">
-            <span class="section-dot"></span>
-            <h3 class="section-title">实时告警动态</h3>
-            <span class="section-subtitle">实时更新中...</span>
-          </div>
-          <div class="alert-list">
-            <div
-              v-for="(alert, idx) in alertList"
-              :key="idx"
-              class="alert-card"
-              :class="'alert-' + alert.level"
-            >
-              <div class="alert-card-header">
-                <span class="alert-level-tag" :class="'tag-' + alert.level">{{
-                  alert.levelText
-                }}</span>
-                <span class="alert-time">{{ alert.time }}</span>
-              </div>
-              <div class="alert-card-title">{{ alert.title }}</div>
-              <div class="alert-card-meta">
-                <span>设备: {{ alert.device }}</span>
-                <span>地点: {{ alert.location }}</span>
-              </div>
-            </div>
-          </div>
-        </BorderBox8>
-
-        <!-- 应急事件处置进度 -->
-        <BorderBox5 :reverse="true" class="panel-section emergency-panel h-[400px]!">
-          <div class="section-header">
-            <span class="section-dot"></span>
-            <h3 class="section-title">应急事件处置进度</h3>
-          </div>
-          <div class="emergency-stages">
-            <div v-for="stage in emergencyStages" :key="stage.name" class="stage-item">
-              <span class="stage-name">{{ stage.name }}</span>
-              <span class="stage-count">{{ stage.count }}</span>
-            </div>
-          </div>
-          <!-- <div class="admin-info">
-            <span class="admin-role">管理员</span>
-            <span class="admin-name">ZHANG SAN</span>
-          </div> -->
-        </BorderBox5>
-      </aside>
+      <RightPanel ref="rightPanelRef" />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+  import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import { Icon } from '@iconify/vue'
-  import * as echarts from 'echarts/core'
-  import { BarChart, PieChart } from 'echarts/charts'
-  import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-  import { CanvasRenderer } from 'echarts/renderers'
-  import { BorderBox5, BorderBox6, BorderBox8, BorderBox13 } from '@dataview/datav-vue3'
-  import { BaseMap, MultiMarker, MultiLabel } from 'tlbs-map-vue'
+  import { BaseMap, MultiMarker, MultiLabel, DomOverlay } from 'tlbs-map-vue'
+  import { deviceList } from '@/api/system-manage'
+  import { DeviceTypeEnum } from '@/enums/formEnum'
   import GradientText from '@/components/GradientText/index.vue'
+  import DetectVideoContent from '@/components/DetectVideoContent/index.vue'
+  import LeftPanel from './components/LeftPanel.vue'
+  import RightPanel from './components/RightPanel.vue'
 
-  echarts.use([
-    BarChart,
-    PieChart,
-    GridComponent,
-    TooltipComponent,
-    LegendComponent,
-    CanvasRenderer
-  ])
-
+  type DeviceListItem = Api.SystemManage.DeviceListItem
   // 路由
   const router = useRouter()
   const goBack = () => router.back()
@@ -254,34 +135,43 @@
   // 腾讯地图 Key
   const txMapKey = import.meta.env.VITE_TX_API_KEY
 
-  // 摄像头标记 SVG
-  const normalMarkerSvg = btoa(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="8" fill="none" stroke="#00c8ff" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="#00c8ff"/></svg>'
-  )
-  const alertMarkerSvg = btoa(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="15" r="12" fill="none" stroke="#ff5a5a" stroke-width="2"><animate attributeName="r" values="8;14;8" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle><circle cx="15" cy="15" r="6" fill="#ff5a5a"/></svg>'
-  )
+  // 地图中心点
+  const mapCenter = ref({ lat: 39.95, lng: 116.4 })
+
+  // 面板引用
+  const leftPanelRef = ref<InstanceType<typeof LeftPanel> | null>(null)
+  const rightPanelRef = ref<InstanceType<typeof RightPanel> | null>(null)
+
+  // 检测视频弹窗（DomOverlay 方式，跟随点位）
+  const activePopup = ref<{
+    device: DeviceListItem
+    position: { lat: number; lng: number }
+    markerId: string
+  } | null>(null)
+  const cameraDeviceList = ref<DeviceListItem[]>([])
+
+  // POI 摄像头图标（本地 PNG）
+  const poiImg = '/src/assets/images/poi.png'
 
   /** 标记样式 */
   const markerStyles = {
     normal: {
-      width: 24,
-      height: 24,
-      anchor: { x: 12, y: 12 },
-      src: 'data:image/svg+xml;base64,' + normalMarkerSvg
+      width: 48,
+      height: 48,
+      anchor: { x: 16, y: 32 },
+      src: poiImg
     },
     alert: {
-      width: 30,
-      height: 30,
-      anchor: { x: 15, y: 15 },
-      src: 'data:image/svg+xml;base64,' + alertMarkerSvg
+      width: 44,
+      height: 44,
+      anchor: { x: 16, y: 42 },
+      src: poiImg
     }
   }
 
   // 时间相关
   const currentTime = ref('')
   const currentDate = ref('')
-  const syncTime = ref('')
   let timer: ReturnType<typeof setInterval> | null = null
 
   const updateTime = () => {
@@ -290,7 +180,6 @@
     const m = String(now.getMinutes()).padStart(2, '0')
     const s = String(now.getSeconds()).padStart(2, '0')
     currentTime.value = `${h}:${m}:${s}`
-    syncTime.value = `${h}:${m}:${s}`
     const y = now.getFullYear()
     const mo = String(now.getMonth() + 1).padStart(2, '0')
     const d = String(now.getDate()).padStart(2, '0')
@@ -298,250 +187,155 @@
     currentDate.value = `${y}-${mo}-${d}  ${weekdays[now.getDay()]}`
   }
 
-  // 摄像头标记（地图坐标 [经度, 维度]）
-  const cameraMarkers = ref([
-    { id: 'CAM-0852', coord: [116.58, 40.12], alert: false, value: 0 },
-    { id: 'CAM-1104', coord: [116.2, 39.72], alert: false, value: 0 },
-    { id: 'CAM-0428', coord: [116.85, 39.45], alert: false, value: 0 },
-    { id: 'CAM-0421', coord: [116.4, 39.95], alert: true, alertCount: 1, value: 1 }
-  ])
+  // 摄像头标记（地图坐标 [经度, 纬度]）
+  type CameraMarker = { id: string; name?: string; coord: [number, number]; alert?: boolean }
+  const cameraMarkers = ref<CameraMarker[]>([])
 
   /** 标记坐标数据 */
-  const markerGeometries = cameraMarkers.value.map((cam) => ({
-    id: cam.id,
-    styleId: cam.alert ? 'alert' : 'normal',
-    position: { lat: cam.coord[1], lng: cam.coord[0] }
-  }))
+  const markerGeometries = computed(() =>
+    cameraMarkers.value.map((cam) => ({
+      id: cam.id,
+      styleId: cam.alert ? 'alert' : 'normal',
+      position: { lat: cam.coord[1], lng: cam.coord[0] }
+    }))
+  )
 
   /** 标签样式 */
   const labelStyles = {
     label: {
-      color: 'rgba(160, 190, 230, 0.9)',
-      fontSize: 11,
+      color: '#4a99f8',
       borderRadius: 3,
-      background: 'rgba(10, 22, 40, 0.8)',
-      padding: [6, 4],
-      direction: 'right',
-      offset: { x: 8, y: 0 }
+      background: 'rgba(10, 22, 40, 0.85)',
+      verticalAlignment: 'top',
+      offset: { x: 0, y: 15 },
+      wrapOptions: {
+        maxWidth: 200
+      }
     }
   }
 
   /** 标签坐标数据 */
-  const labelGeometries = cameraMarkers.value.map((cam) => ({
-    id: cam.id + '_label',
-    styleId: 'label',
-    position: { lat: cam.coord[1], lng: cam.coord[0] },
-    content: cam.id
-  }))
+  const labelGeometries = computed(() =>
+    cameraMarkers.value.map((cam) => ({
+      id: cam.id + '_label',
+      styleId: 'label',
+      position: { lat: cam.coord[1], lng: cam.coord[0] },
+      content: cam.name || cam.id
+    }))
+  )
 
-  // 灾害类型
-  const hazardTypes = ref([
-    { name: '抛洒物', count: '428 起', percent: 38 },
-    { name: '塌方', count: '152 起', percent: 14 },
-    { name: '火灾', count: '34 起', percent: 3 },
-    { name: '交通事故', count: '670 起', percent: 60 }
-  ])
+  // 加载真实摄像头点位
+  const loadCameraMarkers = async () => {
+    try {
+      const res = await deviceList({
+        current: 1,
+        size: 500,
+        deviceType: DeviceTypeEnum.CAMERA
+      })
+      const list = res?.list || []
 
-  // 告警列表
-  const alertList = ref([
-    {
-      time: '14:22:15',
-      title: 'G15沈海高速火灾告警',
-      device: 'CAM-0421',
-      location: 'K125+200',
-      level: 'urgent',
-      levelText: '紧急'
-    },
-    {
-      time: '14:18:03',
-      title: '路面大面积塌方风险',
-      device: 'SEN-1108',
-      location: 'S20临空段',
-      level: 'high',
-      levelText: '高级'
-    },
-    {
-      time: '14:10:55',
-      title: '疑似交通事故(双车)',
-      device: 'CAM-0982',
-      location: '外环高速入口',
-      level: 'medium',
-      levelText: '中级'
-    },
-    {
-      time: '14:05:12',
-      title: '路面零星抛洒物',
-      device: 'CAM-1134',
-      location: 'K54+100',
-      level: 'low',
-      levelText: '低级'
-    }
-  ])
-
-  // 应急事件处置进度
-  const emergencyStages = ref([
-    { name: '启动阶段', count: 12 },
-    { name: '已确认', count: 8 },
-    { name: '调度中', count: 5 },
-    { name: '处理中', count: 3 },
-    { name: '已关闭', count: 1 }
-  ])
-
-  // 图表
-  const alertLevelChartRef = ref<HTMLElement | null>(null)
-  const confidenceChartRef = ref<HTMLElement | null>(null)
-  let alertLevelChart: echarts.ECharts | null = null
-  let confidenceChart: echarts.ECharts | null = null
-
-  /** 初始化告警等级分布图表 */
-  const initAlertLevelChart = () => {
-    if (!alertLevelChartRef.value) return
-    alertLevelChart = echarts.init(alertLevelChartRef.value)
-    alertLevelChart.setOption({
-      grid: { left: 0, right: 0, top: 8, bottom: 0, containLabel: false },
-      xAxis: { type: 'value', show: false, max: 100 },
-      yAxis: {
-        type: 'category',
-        data: ['紧急', '高级', '中级', '低级'],
-        inverse: true,
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: {
-          color: 'rgba(160, 190, 230, 0.75)',
-          fontSize: 10
+      const parseCoord = (item: any): [number, number] | null => {
+        if (Array.isArray(item.coordinate) && item.coordinate.length === 2) {
+          const [lng, lat] = item.coordinate
+          if (typeof lng === 'number' && typeof lat === 'number') {
+            return [lng, lat]
+          }
         }
-      },
-      series: [
-        {
-          type: 'bar',
-          data: [15, 25, 40, 20],
-          barWidth: 10,
-          itemStyle: {
-            borderRadius: [0, 4, 4, 0],
-            color: (params: any) => {
-              const colors = ['#ff5a5a', '#ff9a3c', '#ffd23f', '#00c8ff']
-              return colors[params.dataIndex] || '#00c8ff'
-            }
-          },
-          label: {
-            show: true,
-            position: 'right',
-            color: '#e8f0fe',
-            fontSize: 10,
-            fontWeight: 700,
-            formatter: '{c}% ({d})',
-            rich: {
-              d: {
-                fontSize: 10,
-                fontWeight: 400,
-                color: 'rgba(160, 190, 230, 0.75)'
-              }
+        const lng =
+          item.longitude ?? item.lng ?? (typeof item.lon === 'number' ? item.lon : undefined)
+        const lat = item.latitude ?? item.lat
+        if (typeof lat === 'number' && typeof lng === 'number') {
+          return [Number(lng), Number(lat)]
+        }
+        if (typeof item.location === 'string') {
+          const m = item.location.match(/(-?\d+\.?\d*)[^\d-]+(-?\d+\.?\d*)/)
+          if (m) {
+            const a = Number(m[1])
+            const b = Number(m[2])
+            if (isFinite(a) && isFinite(b)) {
+              const lngFirst = Math.abs(a) > Math.abs(b) ? [a, b] : [b, a]
+              return [lngFirst[0], lngFirst[1]]
             }
           }
         }
-      ]
-    })
+        return null
+      }
+
+      const markers: CameraMarker[] = []
+      cameraDeviceList.value = list as DeviceListItem[]
+      for (const d of list as any[]) {
+        const coord = parseCoord(d)
+        if (coord) {
+          markers.push({
+            id: d.deviceCode || String(d.id),
+            name: d.deviceName,
+            coord,
+            alert: false
+          })
+        }
+      }
+      if (markers.length) {
+        cameraMarkers.value = markers
+        const avgLng = markers.reduce((s, m) => s + m.coord[0], 0) / markers.length
+        const avgLat = markers.reduce((s, m) => s + m.coord[1], 0) / markers.length
+        mapCenter.value = { lat: avgLat, lng: avgLng }
+      }
+    } catch (e) {
+      console.error('加载摄像头点位失败:', e)
+    }
   }
 
-  /** 初始化置信度环形图 */
-  const initConfidenceChart = () => {
-    if (!confidenceChartRef.value) return
-    confidenceChart = echarts.init(confidenceChartRef.value)
-    confidenceChart.setOption({
-      series: [
-        {
-          type: 'pie',
-          radius: ['65%', '80%'],
-          startAngle: 90,
-          silent: true,
-          label: { show: false },
-          data: [
-            { value: 82, itemStyle: { color: '#00c8ff' } },
-            { value: 18, itemStyle: { color: 'rgba(16, 40, 72, 0.55)' } }
-          ]
+  // 标记点击处理
+  const handleMarkerClick = (e: { geometry: { id: string } }) => {
+    const markerId = e.geometry.id
+    const device = cameraDeviceList.value.find(
+      (d) => d.deviceCode === markerId || String(d.id) === markerId
+    )
+    if (device && device.videoUrl) {
+      const marker = cameraMarkers.value.find((m) => m.id === markerId)
+      if (marker) {
+        activePopup.value = {
+          device,
+          position: { lat: marker.coord[1], lng: marker.coord[0] },
+          markerId
         }
-      ],
-      graphic: [
-        {
-          type: 'text',
-          left: 'center',
-          top: '35%',
-          style: {
-            text: '82%',
-            fontSize: 22,
-            fontWeight: 700,
-            fill: '#e8f0fe',
-            fontFamily: 'DIN, sans-serif'
-          }
-        },
-        {
-          type: 'text',
-          left: 'center',
-          top: '60%',
-          style: {
-            text: '置信度',
-            fontSize: 10,
-            fill: 'rgba(160, 190, 230, 0.75)'
-          }
-        }
-      ]
-    })
+      }
+    }
   }
 
   const handleResize = () => {
-    alertLevelChart?.resize()
-    confidenceChart?.resize()
+    leftPanelRef.value?.resize()
+    rightPanelRef.value?.resize()
   }
 
-  onMounted(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') activePopup.value = null
+  }
+
+  onMounted(async () => {
     updateTime()
     timer = setInterval(updateTime, 1000)
-    nextTick(() => {
-      initAlertLevelChart()
-      initConfidenceChart()
-    })
+    await loadCameraMarkers()
     window.addEventListener('resize', handleResize)
+    window.addEventListener('keydown', handleEsc)
   })
 
   onBeforeUnmount(() => {
     if (timer) clearInterval(timer)
     window.removeEventListener('resize', handleResize)
-    alertLevelChart?.dispose()
-    confidenceChart?.dispose()
+    window.removeEventListener('keydown', handleEsc)
   })
 </script>
 
 <style lang="scss" scoped>
   /* ========== 浅蓝科技风色系变量 ========== */
-  // 背景层级：浅色底 + 蓝色渐变
-  $bg-deep: #0a1628;
   $bg-body: linear-gradient(160deg, #0b1a2e 0%, #0f2645 35%, #0a1e38 70%, #0d1f3c 100%);
-  $bg-card: rgb(12 30 56 / 75%);
-  $bg-card-alt: rgb(16 40 72 / 55%);
-  $bg-card-solid: #0e2340;
-  $bg-glass: rgb(20 50 90 / 40%);
-
-  // 文字层级
   $text-primary: #e8f0fe;
   $text-secondary: rgb(160 190 230 / 75%);
   $text-muted: rgb(130 165 210 / 50%);
-
-  // 主色调：科技蓝
-  $accent-blue: #4d9eff;
   $accent-cyan: #00c8ff;
-  $accent-sky: #38bdf8;
   $accent-light-blue: #7cb9ff;
-
-  // 辅助语义色（保持告警辨识度）
   $accent-red: #ff5a5a;
-  $accent-orange: #ff9a3c;
-  $accent-green: #3ddc84;
-  $accent-yellow: #ffd23f;
-
-  // 边框 & 发光
-  $border-color: rgb(77 158 255 / 18%);
-  $border-glow: rgb(0 200 255 / 12%);
-  $shadow-glow: 0 0 20px rgb(0 200 255 / 8%);
 
   /* ========== 主布局 ========== */
   .big-screen {
@@ -555,7 +349,6 @@
     color: $text-primary;
     background: $bg-body;
 
-    // 科技感网格纹理
     &::before {
       position: absolute;
       inset: 0;
@@ -579,11 +372,9 @@
     justify-content: space-between;
     height: 64px;
     padding: 0 32px;
-    overflow: hidden;
     background: linear-gradient(180deg, rgb(10 26 48 / 96%) 0%, rgb(10 22 40 / 85%) 100%);
     backdrop-filter: blur(14px);
 
-    // 底部发光分割线
     &::after {
       position: absolute;
       right: 5%;
@@ -603,13 +394,11 @@
     }
   }
 
-  // ===== 左右信息区 =====
   .header-left,
   .header-right {
     z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 2px;
     width: 220px;
     font-size: 12px;
     color: $text-secondary;
@@ -621,63 +410,37 @@
   }
 
   .back-button {
-    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 80px;
     height: 32px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     color: $accent-light-blue;
     cursor: pointer;
-    background-color: transparent;
+    background: transparent;
     border: 3px ridge #149cea;
     border-radius: 8px;
     outline: none;
-    transition: 1s;
-  }
+    transition: 0.3s;
 
-  .back-button:hover::before,
-  .back-button:hover::after {
-    transform: scale(0);
-  }
-
-  .back-button:hover {
-    box-shadow: inset 0 0 25px #1479ea;
-  }
-
-  .header-date {
-    font-size: 11px;
-    color: $text-muted;
-    letter-spacing: 1px;
+    &:hover {
+      box-shadow: inset 0 0 25px #1479ea;
+    }
   }
 
   .header-time {
     font-size: 18px;
     font-weight: 600;
-    font-variant-numeric: tabular-nums;
     color: $accent-light-blue;
     letter-spacing: 2px;
   }
 
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    50% {
-      opacity: 0.3;
-    }
-  }
-
-  // ===== 中心标题区 =====
   .header-center {
     z-index: 2;
     display: flex;
     flex: 1;
-    gap: 0;
     align-items: center;
     justify-content: center;
   }
@@ -688,14 +451,11 @@
   }
 
   .header-title {
-    position: relative;
-    z-index: 2;
     font-size: 24px;
     font-weight: 800;
     letter-spacing: 4px;
   }
 
-  // 扫描线动画
   .scan-line {
     position: absolute;
     top: 0;
@@ -703,7 +463,6 @@
     z-index: 1;
     width: 60%;
     height: 100%;
-    pointer-events: none;
     background: linear-gradient(
       90deg,
       transparent,
@@ -725,12 +484,10 @@
     }
   }
 
-  // 标题下方装饰线
   .title-underline {
     position: absolute;
     bottom: -4px;
     left: 50%;
-    z-index: 1;
     width: 80%;
     height: 2px;
     background: linear-gradient(
@@ -747,14 +504,7 @@
   .underline-glow {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgb(0 200 255 / 40%),
-      $accent-cyan,
-      rgb(0 200 255 / 40%),
-      transparent
-    );
+    background: inherit;
     filter: blur(4px);
     animation: glow-pulse 3s ease-in-out infinite;
   }
@@ -770,79 +520,49 @@
     }
   }
 
-  // ===== 装饰翼 =====
   .header-wing {
-    position: relative;
     display: flex;
-    gap: 0;
     align-items: center;
     width: 140px;
   }
 
   .wing-left {
     flex-direction: row-reverse;
-    justify-content: flex-start;
-  }
-
-  .wing-right {
-    flex-direction: row;
-    justify-content: flex-start;
   }
 
   .wing-line {
-    position: relative;
-    flex: 1;
     height: 1px;
+    background: linear-gradient(90deg, transparent, $accent-cyan);
+  }
+
+  .wing-left .wing-line {
+    background: linear-gradient(-90deg, transparent, $accent-cyan);
   }
 
   .wing-line-1 {
-    width: 70%;
-    background: linear-gradient(90deg, transparent, rgb(0 200 255 / 50%));
-  }
-
-  .wing-right .wing-line-1 {
-    background: linear-gradient(90deg, rgb(0 200 255 / 50%), transparent);
+    width: 100px;
+    opacity: 0.4;
   }
 
   .wing-line-2 {
-    width: 100%;
-    background: linear-gradient(90deg, transparent, rgb(0 200 255 / 20%));
+    width: 60px;
+    margin-top: 4px;
+    opacity: 0.2;
   }
 
-  .wing-right .wing-line-2 {
-    background: linear-gradient(90deg, rgb(0 200 255 / 20%), transparent);
-  }
-
-  // 翼端菱形
   .wing-diamond {
-    position: relative;
-    flex-shrink: 0;
-    width: 8px;
-    height: 8px;
-    background: rgb(0 200 255 / 10%);
-    border: 1px solid $accent-cyan;
-    box-shadow: 0 0 6px rgb(0 200 255 / 30%);
+    width: 6px;
+    height: 6px;
+    margin: 0 8px;
+    background: $accent-cyan;
+    border-radius: 1px;
+    box-shadow: 0 0 10px $accent-cyan;
     transform: rotate(45deg);
-    animation: diamond-glow 3s ease-in-out infinite;
   }
 
-  @keyframes diamond-glow {
-    0%,
-    100% {
-      box-shadow: 0 0 4px rgb(0 200 255 / 20%);
-    }
-
-    50% {
-      box-shadow: 0 0 10px rgb(0 200 255 / 50%);
-    }
-  }
-
-  // ===== 背景粒子 =====
   .header-particles {
     position: absolute;
     inset: 0;
-    z-index: 1;
-    overflow: hidden;
     pointer-events: none;
   }
 
@@ -856,64 +576,46 @@
     animation: float-particle linear infinite;
   }
 
-  // 6 个粒子的差异化配置
   .hp-1 {
     top: 60%;
     left: 12%;
-    width: 2px;
-    height: 2px;
     animation-duration: 6s;
-    animation-delay: 0s;
   }
 
   .hp-2 {
     top: 20%;
     left: 25%;
-    width: 1.5px;
-    height: 1.5px;
-    background: $accent-light-blue;
     animation-duration: 8s;
-    animation-delay: 1.2s;
   }
 
   .hp-3 {
     top: 80%;
     left: 40%;
     animation-duration: 7s;
-    animation-delay: 2.5s;
   }
 
   .hp-4 {
     top: 30%;
     left: 65%;
-    width: 1.5px;
-    height: 1.5px;
-    background: $accent-light-blue;
     animation-duration: 5.5s;
-    animation-delay: 0.8s;
   }
 
   .hp-5 {
     top: 70%;
     left: 78%;
     animation-duration: 9s;
-    animation-delay: 3s;
   }
 
   .hp-6 {
     top: 15%;
     left: 90%;
-    width: 1px;
-    height: 1px;
-    background: $accent-blue;
     animation-duration: 6.5s;
-    animation-delay: 1.8s;
   }
 
   @keyframes float-particle {
     0% {
       opacity: 0;
-      transform: translateY(0) translateX(0);
+      transform: translateY(0);
     }
 
     15% {
@@ -933,280 +635,62 @@
   /* ========== 主体 ========== */
   .screen-body {
     position: relative;
-    flex: 1;
-    min-height: 0;
-  }
-
-  .panel-left,
-  .panel-right {
-    position: absolute;
-    top: 12px;
-    bottom: 12px;
-    z-index: 10;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 286px;
-    overflow-y: auto;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  .panel-left {
-    left: 12px;
-    background: linear-gradient(
-      to left,
-      transparent 0%,
-      rgb(10 22 48 / 50%) 40%,
-      rgb(10 22 48 / 80%) 100%
-    );
-  }
-
-  .panel-right {
-    right: 12px;
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      rgb(10 22 48 / 50%) 40%,
-      rgb(10 22 48 / 80%) 100%
-    );
+    flex: 1;
+    overflow: hidden;
   }
 
   .map-area {
     position: absolute;
     inset: 0;
-    height: 100%;
-    overflow: hidden;
+    z-index: 0;
   }
 
-  /* ========== 面板公共样式 ========== */
-  .panel-section {
-    padding: 16px;
-    background: $bg-card;
-    backdrop-filter: blur(8px);
-    border: 1px solid $border-color;
-    border-radius: 10px;
-    box-shadow: $shadow-glow;
-    transition: border-color 0.3s ease;
+  .tencent-map {
+    width: 100%;
+    height: 100%;
+  }
 
-    &:hover {
-      border-color: rgb(77 158 255 / 30%);
+  /* ========== 告警弹窗 ========== */
+  .alert-popup {
+    width: 40vw;
+    padding: 12px;
+    background: rgb(10 26 48 / 90%);
+    backdrop-filter: blur(8px);
+    border: 1px solid $accent-red;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgb(255 90 90 / 30%);
+    animation: popup-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &::before {
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: 15px;
+      height: 15px;
+      content: '';
+      border-top: 2px solid $accent-red;
+      border-left: 2px solid $accent-red;
     }
   }
 
-  .section-header {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 14px;
-  }
+  @keyframes popup-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
 
-  .section-dot {
-    flex-shrink: 0;
-    width: 6px;
-    height: 6px;
-    background: $accent-cyan;
-    border-radius: 50%;
-    box-shadow: 0 0 6px $accent-cyan;
-  }
-
-  .section-title {
-    flex: 1;
-    font-size: 16px;
-    font-weight: 600;
-    color: $accent-light-blue;
-  }
-
-  .section-subtitle {
-    font-size: 10px;
-    color: $text-muted;
-  }
-
-  /* ========== 概览指标 ========== */
-  .metrics-main {
-    margin-bottom: 12px;
-  }
-
-  .metric-highlight {
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
-  }
-
-  .metric-trend {
-    padding: 2px 6px;
-    font-size: 12px;
-    font-weight: 700;
-    color: $accent-red;
-    background: rgb(255 90 90 / 12%);
-    border-radius: 4px;
-  }
-
-  .metric-value {
-    font-size: 36px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    background: linear-gradient(135deg, $accent-cyan, $accent-blue);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .metric-label {
-    margin-left: auto;
-    font-size: 12px;
-    color: $text-secondary;
-  }
-
-  .metrics-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .metric-card {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 10px 8px;
-    text-align: center;
-    background: $bg-card-alt;
-    border: 1px solid rgb(77 158 255 / 8%);
-    border-radius: 6px;
-  }
-
-  .metric-card-value {
-    font-size: 24px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-
-  .metric-card-label {
-    font-size: 10px;
-    color: $text-secondary;
-  }
-
-  .text-blue {
-    color: $accent-blue;
-  }
-
-  .text-cyan {
-    color: $accent-cyan;
-  }
-
-  .text-red {
-    color: $accent-red;
-  }
-
-  /* ========== 告警等级分布 ========== */
-  .alert-level-panel {
-    flex: 1;
-  }
-
-  .alert-level-chart {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .chart-container {
-    flex: 1;
-    height: 180px;
-  }
-
-  .confidence-ring {
-    flex-shrink: 0;
-    width: 110px;
-    height: 110px;
-  }
-
-  .chart-container-sm {
-    width: 100%;
-    height: 100%;
-  }
-
-  /* ========== 灾害类型分布 ========== */
-  .hazard-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .hazard-item {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .hazard-name {
-    flex-shrink: 0;
-    width: 56px;
-    font-size: 10px;
-    color: $text-secondary;
-  }
-
-  .hazard-bar-track {
-    flex: 1;
-    height: 6px;
-    overflow: hidden;
-    background: rgb(20 50 90 / 50%);
-    border-radius: 3px;
-  }
-
-  .hazard-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, $accent-cyan, $accent-blue);
-    border-radius: 3px;
-    box-shadow: 0 0 8px rgb(0 200 255 / 30%);
-    transition: width 0.6s ease;
-  }
-
-  .hazard-count {
-    flex-shrink: 0;
-    width: 52px;
-    font-size: 10px;
-    color: $text-secondary;
-    text-align: right;
-  }
-
-  /* ========== 中间地图区域 ========== */
-
-  .tencent-map {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* 告警弹窗 */
-  .alert-popup {
-    position: absolute;
-    z-index: 20;
-    width: 320px;
-    overflow: hidden;
-    background: rgb(12 30 56 / 92%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgb(255 90 90 / 35%);
-    border-radius: 10px;
-    box-shadow:
-      0 8px 32px rgb(0 0 0 / 40%),
-      0 0 16px rgb(255 90 90 / 10%);
-    transform: translate(-50%, -50%);
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
   .popup-header {
     display: flex;
-    gap: 6px;
     align-items: center;
-    padding: 8px 12px;
-    background: rgb(255 90 90 / 10%);
-    border-bottom: 1px solid rgb(255 90 90 / 15%);
+    justify-content: space-between;
+    margin-bottom: 10px;
   }
 
   .popup-dot {
@@ -1214,290 +698,97 @@
     height: 6px;
     background: $accent-red;
     border-radius: 50%;
-    box-shadow: 0 0 6px $accent-red;
-    animation: pulse 1s infinite;
+    animation: alert-blink 1s infinite;
+  }
+
+  @keyframes alert-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.4;
+    }
   }
 
   .popup-title {
-    flex: 1;
-    font-size: 10px;
+    margin-left: 6px;
+    font-size: 12px;
     font-weight: 700;
     color: $accent-red;
   }
 
   .popup-rec {
-    font-size: 8px;
-    color: $text-secondary;
+    margin-left: 4px;
+    font-size: 10px;
+    color: $accent-red;
+    opacity: 0.8;
+  }
+
+  .popup-close {
+    margin-left: auto;
+    font-size: 16px;
+    line-height: 1;
+    color: $accent-red;
+    cursor: pointer;
+    background: none;
+    border: none;
+    opacity: 0.8;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   .popup-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 6px 12px;
-    background: rgb(10 22 40 / 50%);
+    margin-bottom: 10px;
   }
 
   .popup-info-label {
-    font-size: 10px;
-    color: $text-secondary;
+    font-size: 9px;
+    color: $text-muted;
   }
 
   .popup-info-value {
-    font-size: 12px;
+    font-size: 11px;
     color: $text-primary;
   }
 
   .popup-video {
     position: relative;
-    height: 160px;
+    width: 100%;
+    height: 45vh;
     background: #000;
+    border-radius: 2px;
   }
 
   .popup-video-placeholder {
-    position: absolute;
-    inset: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: $text-secondary;
+    height: 100%;
+    font-size: 11px;
+    color: #444;
   }
 
   .popup-video-overlay {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 6px;
-    background: linear-gradient(transparent, rgb(0 0 0 / 70%));
+    inset: 0;
+    padding: 8px;
+    pointer-events: none;
   }
 
   .detect-tag {
-    display: inline-block;
-    width: fit-content;
-    padding: 3px 8px;
-    font-size: 10px;
-    font-weight: 700;
-    border-radius: 4px;
-  }
-
-  .tag-vehicle {
-    color: #000;
-    background: rgb(255 255 255 / 90%);
-  }
-
-  /* 底部状态栏 */
-  .center-status-bar {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    background: $bg-card;
-    border: 1px solid $border-color;
-    border-radius: 10px;
-  }
-
-  .status-badge {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    padding: 4px 12px;
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 6px;
-  }
-
-  .badge-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-
-  .badge-green {
-    .badge-dot {
-      background: $accent-green;
-    }
-
-    color: $accent-green;
-  }
-
-  .badge-orange {
-    .badge-dot {
-      background: $accent-orange;
-    }
-
-    color: $accent-orange;
-  }
-
-  .badge-red {
-    .badge-dot {
-      background: $accent-red;
-    }
-
-    color: $accent-red;
-  }
-
-  /* ========== 右侧面板 ========== */
-  .alert-list-panel {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  .alert-list {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  .alert-card {
-    padding: 10px;
-    background: $bg-card-alt;
-    backdrop-filter: blur(4px);
-    border-left: 3px solid transparent;
-    border-radius: 8px;
-    transition: background 0.3s ease;
-  }
-
-  .alert-urgent {
-    background: rgb(255 90 90 / 8%);
-    border-left-color: $accent-red;
-  }
-
-  .alert-high {
-    background: rgb(255 154 60 / 6%);
-    border-left-color: $accent-orange;
-  }
-
-  .alert-medium {
-    background: rgb(255 210 63 / 6%);
-    border-left-color: $accent-yellow;
-  }
-
-  .alert-low {
-    background: rgb(0 200 255 / 5%);
-    border-left-color: $accent-cyan;
-  }
-
-  .alert-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-bottom: 4px;
-  }
-
-  .alert-level-tag {
-    padding: 1px 6px;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    border-radius: 3px;
-  }
-
-  .tag-urgent {
-    color: #ff7a7a;
-    background: rgb(255 90 90 / 20%);
-  }
-
-  .tag-high {
-    color: #ffb366;
-    background: rgb(255 154 60 / 18%);
-  }
-
-  .tag-medium {
-    color: #ffe066;
-    background: rgb(255 210 63 / 15%);
-  }
-
-  .tag-low {
-    color: #7cd9ff;
-    background: rgb(0 200 255 / 12%);
-  }
-
-  .alert-time {
-    font-size: 10px;
-    font-variant-numeric: tabular-nums;
-    color: $text-secondary;
-  }
-
-  .alert-card-title {
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    color: $text-primary;
-  }
-
-  .alert-card-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 10px;
-    color: $text-secondary;
-  }
-
-  /* ========== 应急事件处置进度 ========== */
-  .emergency-stages {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  .stage-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px;
-    background: $bg-card-alt;
-    border: 1px solid rgb(77 158 255 / 6%);
-    border-radius: 6px;
-  }
-
-  .stage-name {
-    font-size: 10px;
-    color: $text-secondary;
-  }
-
-  .stage-count {
-    font-size: 14px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: $accent-cyan;
-  }
-
-  .admin-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    background: $bg-card-alt;
-    border: 1px solid rgb(77 158 255 / 6%);
-    border-radius: 6px;
-  }
-
-  .admin-role {
-    font-size: 10px;
-    font-weight: 700;
-    color: $text-secondary;
-  }
-
-  .admin-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: $text-primary;
+    color: #fff;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 80%);
   }
 </style>

@@ -54,7 +54,7 @@
   import type { FormInstance, FormRules } from 'element-plus'
   import { alarmMessageConfirm } from '@/api/warning'
   import { departmentTreeList } from '@/api/system-manage'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
 
   defineOptions({ name: 'ConfirmDialog' })
 

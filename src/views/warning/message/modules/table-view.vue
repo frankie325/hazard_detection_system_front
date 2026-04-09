@@ -36,8 +36,8 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { AlarmLevel, AlarmStatus } from '@/enums/formEnum'
   import type { ColumnOption } from '@/types'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
-  import EventTypeTag from '@/components/event-type-tag/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
 
   defineOptions({ name: 'TableView' })
 

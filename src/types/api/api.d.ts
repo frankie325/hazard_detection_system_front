@@ -261,6 +261,7 @@ declare namespace Api {
       updateTime: string
       fileId: number
       videoUrl: string
+      coordinate: [number, number] // [经度, 纬度]
     }
 
     /** 设备表单 */
