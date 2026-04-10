@@ -19,8 +19,6 @@
         tag="div"
         :data-index="index"
         class="mb-4 cursor-pointer"
-        :initial="{ scale: 0.7, opacity: 0 }"
-        :animate="getItemInView(index) ? { scale: 1, opacity: 1 } : { scale: 0.7, opacity: 0 }"
         :transition="{ duration: 0.2, delay: 0.1 }"
         @mouseenter="() => setSelectedIndex(index)"
         @click="
@@ -106,9 +104,9 @@
     selectedIndex.value = index
   }
 
-  const getItemInView = (index: number) => {
-    return itemsInView.value[index] ?? false
-  }
+  // const getItemInView = (index: number) => {
+  //   return itemsInView.value[index] ?? false
+  // }
 
   const handleScroll = (e: Event) => {
     const target = e.target as HTMLDivElement
@@ -186,6 +184,9 @@
     () => {
       itemsInView.value = new Array(props.items.length).fill(true)
       setTimeout(updateItemsInView, 100)
+    },
+    {
+      deep: true
     }
   )
 
