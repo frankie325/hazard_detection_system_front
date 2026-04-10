@@ -120,14 +120,14 @@
         </ArtIconButton>
 
         <!-- 聊天按钮 -->
-        <ArtIconButton
+        <!-- <ArtIconButton
           v-if="shouldShowChat"
           icon="ri:message-3-line"
           class="chat-button relative"
           @click="openChat"
         >
           <div class="breathing-dot absolute top-2 right-2 size-1.5 !bg-success rounded-full"></div>
-        </ArtIconButton>
+        </ArtIconButton> -->
 
         <!-- 设置按钮 -->
         <div v-if="shouldShowSettings">
@@ -206,7 +206,7 @@
     shouldShowGlobalSearch,
     shouldShowFullscreen,
     shouldShowNotification,
-    shouldShowChat,
+    // shouldShowChat,
     shouldShowLanguage,
     shouldShowSettings,
     shouldShowThemeToggle,
@@ -338,9 +338,9 @@
   /**
    * 打开聊天窗口
    */
-  const openChat = (): void => {
-    mittBus.emit('openChat')
-  }
+  // const openChat = (): void => {
+  //   mittBus.emit('openChat')
+  // }
 </script>
 
 <style lang="scss" scoped>

@@ -42,7 +42,7 @@
 <script setup lang="ts">
   import { TimelineType } from '@/enums/formEnum'
   import { updateStatus } from '@/api/emergency'
-  import AlarmLevelDot from '@/components/alarm-level-dot/index.vue'
+  import AlarmLevelDot from '@/components/AlarmLevelDot/index.vue'
 
   defineOptions({ name: 'ConfirmDialog' })
 
