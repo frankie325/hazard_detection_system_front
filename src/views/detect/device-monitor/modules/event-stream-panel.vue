@@ -22,13 +22,7 @@
               <div class="event-info">
                 <div class="event-name">
                   {{ event.eventName }}
-                  <el-tag
-                    :type="getEventTypeTag(event.eventTypeName)"
-                    size="small"
-                    class="event-type-tag"
-                  >
-                    {{ event.eventTypeName }}
-                  </el-tag>
+                  <EventTypeTag :type="event.eventType" />
                 </div>
                 <div class="event-detail">{{ event.deviceName }}</div>
               </div>
@@ -80,6 +74,7 @@
   import { ArrowRight } from '@element-plus/icons-vue'
   import { eventStreamList } from '@/api/detect'
   import EventStreamSearch from './event-stream-search.vue'
+  import EventTypeTag from '@/components/EventTypeTag/index.vue'
   import { EventStreamTypeEnum } from '@/enums/formEnum'
 
   interface Props {
@@ -161,19 +156,6 @@
     if (percentage >= 80) return '#E6A23C'
     if (percentage >= 70) return '#409EFF'
     return '#67C23A'
-  }
-
-  /**
-   * 获取事件类型对应的Tag类型
-   */
-  const getEventTypeTag = (eventTypeName: string): 'danger' | 'warning' | 'primary' | 'info' => {
-    const typeMap: Record<string, 'danger' | 'warning' | 'primary' | 'info'> = {
-      火灾: 'danger',
-      塌方: 'warning',
-      交通事故: 'danger',
-      抛洒物: 'warning'
-    }
-    return typeMap[eventTypeName] || 'info'
   }
 
   // 按日期分组
