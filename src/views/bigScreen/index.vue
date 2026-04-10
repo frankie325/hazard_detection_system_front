@@ -28,7 +28,7 @@
             :colors="['#4d9eff', '#00c8ff', '#7cb9ff', '#4d9eff']"
             :animation-speed="4"
           >
-            智能公路监测系统
+            智慧公路监测大屏
           </GradientText>
           <!-- 标题下方装饰线 -->
           <div class="title-underline">
