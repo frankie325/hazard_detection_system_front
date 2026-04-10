@@ -3,7 +3,6 @@
     <div v-if="detectVideoUrl" class="detect-video-wrapper">
       <img
         ref="detectImgRef"
-        :key="videoKey"
         :src="detectVideoUrl"
         alt="目标检测视频流"
         class="detect-video"
@@ -42,7 +41,6 @@
   const props = defineProps<Props>()
 
   // ===== 目标检测预览（MJPEG 流） =====
-  const videoKey = ref(Date.now())
   const detectImgRef = ref<HTMLImageElement | null>(null)
   const detectContainerRef = ref<HTMLDivElement | null>(null)
   const isFullscreen = ref(false)
@@ -55,7 +53,6 @@
 
   // 重置视频流
   const resetVideoStream = () => {
-    videoKey.value = Date.now()
     isImageLoading.value = true
     if (detectImgRef.value) {
       detectImgRef.value.src = ''
