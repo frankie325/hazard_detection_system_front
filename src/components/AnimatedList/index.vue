@@ -30,12 +30,10 @@
           }
         "
       >
-        <slot :item="item">
-          <div
-            :class="`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName}`"
-          >
+        <slot :item="item" :selected="selectedIndex === index">
+          <!-- <div :class="`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName}`">
             <p class="text-white m-0">{{ item }}</p>
-          </div>
+          </div> -->
         </slot>
       </Motion>
     </div>
@@ -89,7 +87,7 @@
     className: '',
     itemClassName: '',
     displayScrollbar: true,
-    initialSelectedIndex: -1
+    initialSelectedIndex: 0
   })
 
   const emit = defineEmits<{
@@ -183,13 +181,20 @@
     keyboardNav.value = false
   })
 
+  watch(
+    () => props.items,
+    () => {
+      itemsInView.value = new Array(props.items.length).fill(true)
+      setTimeout(updateItemsInView, 100)
+    }
+  )
+
   onMounted(() => {
     if (props.enableArrowNavigation) {
       window.addEventListener('keydown', handleKeyDown)
     }
-
-    itemsInView.value = new Array(props.items.length).fill(true)
-    setTimeout(updateItemsInView, 100)
+    // itemsInView.value = new Array(props.items.length).fill(true)
+    // setTimeout(updateItemsInView, 100)
   })
 
   onUnmounted(() => {

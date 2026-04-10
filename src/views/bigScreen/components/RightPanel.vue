@@ -9,8 +9,8 @@
       </div>
       <div class="alert-list">
         <AnimatedList :items="alertList" :show-gradients="true" :display-scrollbar="true">
-          <template #default="{ item: alert }">
-            <div class="alert-card" :class="'alert-' + alert.level">
+          <template #default="{ item: alert, selected }">
+            <div class="alert-card" :class="`alert-${alert.level} ${selected ? 'selected' : ''}`">
               <div class="alert-card-header">
                 <span class="alert-level-tag" :class="'tag-' + alert.level">{{
                   alert.levelText
@@ -305,7 +305,7 @@
     border-radius: 2px;
     transition: all 0.3s ease;
 
-    &:hover {
+    &.selected {
       background: rgb(20 50 90 / 40%);
       transform: translateX(4px);
     }
