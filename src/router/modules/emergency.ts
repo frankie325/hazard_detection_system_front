@@ -24,7 +24,7 @@ export const emergencyRoutes: AppRouteRecord = {
       component: '/emergency/resource-bind',
       meta: {
         title: 'menus.emergency.resourceBind',
-        keepAlive: true
+        keepAlive: false
       }
     }
     // {
