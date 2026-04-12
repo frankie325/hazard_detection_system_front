@@ -89,7 +89,7 @@
                   activePopup.device.deviceName || activePopup.device.deviceCode
                 }}</span>
                 <span class="popup-rec">REC</span>
-                <button class="popup-close" @click="activePopup = null">×</button>
+                <button class="popup-close" @click="handleClosePopup">×</button>
               </div>
               <div class="popup-info">
                 <span class="popup-info-label">Location / GPS</span>
@@ -99,7 +99,7 @@
                 >
               </div>
               <div class="popup-video">
-                <DetectVideoContent :device="activePopup.device" />
+                <DetectVideoContent ref="detectVideoContentRef" :device="activePopup.device" />
               </div>
             </div>
           </DomOverlay>
@@ -167,6 +167,13 @@
       anchor: { x: 16, y: 42 },
       src: poiImg
     }
+  }
+
+  const detectVideoContentRef = ref<InstanceType<typeof DetectVideoContent> | null>(null)
+
+  const handleClosePopup = () => {
+    detectVideoContentRef.value?.resetVideoStream()
+    activePopup.value = null
   }
 
   // 时间相关
