@@ -26,8 +26,15 @@
             @click="handleSelectEvent(event)"
           >
             <div class="event-header">
-              <EventTypeTag :type="event.eventType" :label="event.eventTypeName" />
-              <AlarmLevelDot :level="event.eventLevel" />
+              <span class="text-[14px]">
+                {{ event.eventName }}
+              </span>
+              <EventTypeTag
+                class="flex-shrink-0"
+                :type="event.eventType"
+                :label="event.eventTypeName"
+              />
+              <!-- <AlarmLevelDot :level="event.eventLevel" /> -->
             </div>
             <div class="event-location">{{ event.location }}</div>
             <div class="event-footer">
