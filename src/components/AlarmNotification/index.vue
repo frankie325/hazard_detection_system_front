@@ -1,10 +1,9 @@
 <script setup lang="ts">
+  import { router } from '@/router'
   defineProps<{
     alarm: Api.Warning.AlarmMessageListItem
     showButton?: boolean
   }>()
-
-  const router = useRouter()
 
   const handleClick = () => {
     router.push('/warning/message')
