@@ -29,7 +29,7 @@
         </ElSelect>
       </ElFormItem>
 
-      <ElFormItem label="应用规则" prop="alarmRuleId">
+      <!-- <ElFormItem label="应用规则" prop="alarmRuleId">
         <ElSelect v-model="formData.alarmRuleId" placeholder="请选择应用规则">
           <ElOption
             v-for="item in alarmRuleOptions"
@@ -38,7 +38,7 @@
             :value="item.id"
           />
         </ElSelect>
-      </ElFormItem>
+      </ElFormItem> -->
 
       <ElFormItem label="设备型号" prop="model">
         <ElInput
