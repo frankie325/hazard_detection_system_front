@@ -4,15 +4,6 @@
       <div class="art-card relative flex flex-col justify-center h-35 px-5 mb-5 max-sm:mb-4">
         <span class="text-g-700 text-sm">{{ item.des }}</span>
         <ArtCountTo class="text-[26px] font-medium mt-2" :target="item.num" :duration="1300" />
-        <div class="flex-c mt-1">
-          <span class="text-xs text-g-600">较上周</span>
-          <span
-            class="ml-1 text-xs font-semibold"
-            :class="[item.change.indexOf('+') === -1 ? 'text-danger' : 'text-success']"
-          >
-            {{ item.change }}
-          </span>
-        </div>
         <div
           class="absolute top-0 bottom-0 right-5 m-auto size-12.5 rounded-xl flex-cc bg-theme/10"
         >
@@ -24,51 +15,50 @@
 </template>
 
 <script setup lang="ts">
+  import { ref, onMounted } from 'vue'
+  import { getWorkbenchOverview } from '@/api/dashboard'
+
   interface CardDataItem {
     des: string
     icon: string
-    startVal: number
-    duration: number
     num: number
-    change: string
   }
 
-  /**
-   * 卡片统计数据列表
-   * 展示总访问次数、在线访客数、点击量和新用户等核心数据指标
-   */
-  const dataList = reactive<CardDataItem[]>([
-    {
-      des: '总访问次数',
-      icon: 'ri:pie-chart-line',
-      startVal: 0,
-      duration: 1000,
-      num: 9120,
-      change: '+20%'
-    },
-    {
-      des: '在线访客数',
-      icon: 'ri:group-line',
-      startVal: 0,
-      duration: 1000,
-      num: 182,
-      change: '+10%'
-    },
-    {
-      des: '点击量',
-      icon: 'ri:fire-line',
-      startVal: 0,
-      duration: 1000,
-      num: 9520,
-      change: '-12%'
-    },
-    {
-      des: '新用户',
-      icon: 'ri:progress-2-line',
-      startVal: 0,
-      duration: 1000,
-      num: 156,
-      change: '+30%'
+  const dataList = ref<CardDataItem[]>([])
+
+  const loadData = async () => {
+    try {
+      const res = await getWorkbenchOverview()
+      if (res) {
+        dataList.value = [
+          {
+            des: '监测设备总数',
+            icon: 'ri:device-line',
+            num: res.deviceCount
+          },
+          {
+            des: '在线设备数',
+            icon: 'material-symbols:android-wifi-3-bar',
+            num: res.onlineDeviceCount
+          },
+          {
+            des: '告警总数',
+            icon: 'ri:fire-line',
+            num: res.alarmCount
+          },
+          {
+            des: '今日事件数',
+            icon: 'material-symbols:calendar-add-on',
+            num: res.todayEventCount
+          }
+        ]
+      }
+    } catch (e) {
+      console.error('加载工作台概览数据失败:', e)
     }
-  ])
+  }
+
+  onMounted(() => {
+    loadData()
+  })
 </script>

@@ -57,3 +57,37 @@ export function getEventStatusStats() {
     url: '/dashboard/event/status'
   })
 }
+
+// 获取工作台概览
+export function getWorkbenchOverview() {
+  return request.get<{
+    deviceCount: number
+    onlineDeviceCount: number
+    alarmCount: number
+    todayEventCount: number
+  }>({
+    url: '/dashboard/workbench/overview'
+  })
+}
+
+// 事件类型统计-环形图
+export function getEventType() {
+  return request.get<
+    {
+      name: string
+      value: number
+    }[]
+  >({
+    url: '/dashboard/event/type'
+  })
+}
+
+// 设备状态统计-柱状图
+export function getDeviceStatus() {
+  return request.get<{
+    xaxis: string[]
+    data: number[]
+  }>({
+    url: '/dashboard/device/status'
+  })
+}
