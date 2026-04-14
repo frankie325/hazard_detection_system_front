@@ -84,7 +84,8 @@
 
   /** 初始化 WebSocket 连接 */
   const initWebSocket = () => {
-    const wsUrl = `${import.meta.env.VITE_API_WEBSOCKET_URL}/ws/alarm`
+    const envWsUrl = import.meta.env.VITE_API_WEBSOCKET_URL
+    const wsUrl = `${envWsUrl}/ws/alarm`
     wsClient = WebSocketClient.getInstance({
       url: wsUrl,
       messageHandler: handleWsAlarmMessage,
