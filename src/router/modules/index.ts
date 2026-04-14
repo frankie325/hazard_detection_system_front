@@ -6,6 +6,7 @@ import { exceptionRoutes } from './exception'
 import { detectRoutes } from './detect'
 import { warningRoutes } from './warning'
 import { emergencyRoutes } from './emergency'
+import { bigScreenRoutes } from './bigScreen'
 
 /**
  * 导出所有模块化路由
@@ -17,5 +18,6 @@ export const routeModules: AppRouteRecord[] = [
   warningRoutes,
   emergencyRoutes,
   resultRoutes,
-  exceptionRoutes
+  exceptionRoutes,
+  bigScreenRoutes
 ]

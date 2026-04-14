@@ -29,7 +29,8 @@ export default ({ mode }: { mode: string }) => {
       proxy: {
         '/api': {
           target: VITE_API_PROXY_URL,
-          changeOrigin: true
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
         }
       },
       host: true
@@ -43,7 +44,11 @@ export default ({ mode }: { mode: string }) => {
         '@icons': resolvePath('src/assets/icons'),
         '@utils': resolvePath('src/utils'),
         '@stores': resolvePath('src/store'),
-        '@styles': resolvePath('src/assets/styles')
+        '@styles': resolvePath('src/assets/styles'),
+        '@dataview/datav-vue3': path.resolve(
+          __dirname,
+          'node_modules/@dataview/datav-vue3/es/index.mjs'
+        )
       }
     },
     build: {

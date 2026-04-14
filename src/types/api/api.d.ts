@@ -50,7 +50,7 @@ declare namespace Api {
 
     /** 分页响应基础结构 */
     interface PaginatedResponse<T = any> {
-      records: T[]
+      list: T[]
       current: number
       size: number
       total: number
@@ -58,13 +58,19 @@ declare namespace Api {
 
     /** 启用状态 */
     type EnableStatus = '1' | '2'
+
+    /** 性别 */
+    enum GenderEnum {
+      MALE = 'M',
+      FEMALE = 'F'
+    }
   }
 
   /** 认证类型 */
   namespace Auth {
     /** 登录参数 */
     interface LoginParams {
-      userName: string
+      username: string
       password: string
     }
 
@@ -82,54 +88,407 @@ declare namespace Api {
       userName: string
       email: string
       avatar?: string
+
+      // 用户信息
+      id: number
+      idCard: string
+      name: string // 真实姓名
+      username: string // 用户名
+      phone: string
+      gender: string
+      remark: string
+      roleId: number
+      roleName: string
+      deptId: number
+      deptName: string
+      createTime: string
+      updateTime: string
     }
   }
 
   /** 系统管理类型 */
   namespace SystemManage {
+    type GenderEnum = import('@/enums/formEnum').GenderEnum
+
     /** 用户列表 */
     type UserList = Api.Common.PaginatedResponse<UserListItem>
 
     /** 用户列表项 */
     interface UserListItem {
       id: number
-      avatar: string
-      status: string
-      userName: string
-      userGender: string
-      nickName: string
-      userPhone: string
-      userEmail: string
-      userRoles: string[]
-      createBy: string
+      name: string
+      username: string
+      idCard: string
+      phone: string
+      gender: GenderEnum
+      remark: string
+      roleId: number
+      roleName: string
+      deptName: string
       createTime: string
-      updateBy: string
       updateTime: string
     }
 
     /** 用户搜索参数 */
     type UserSearchParams = Partial<
-      Pick<UserListItem, 'id' | 'userName' | 'userGender' | 'userPhone' | 'userEmail' | 'status'> &
-        Api.Common.CommonSearchParams
+      Pick<UserListItem, 'username' | 'roleName' | 'deptName'> & Api.Common.CommonSearchParams
     >
 
+    /** 用户表单 */
+    interface UserForm {
+      id?: number
+      name: string
+      gender: GenderEnum
+      username: string
+      password?: string
+      phone: string
+      idCard: string
+      roleId: number | undefined
+      remark: string
+    }
+
+    /** 部门搜索参数 */
+    interface DepartmentSearch {
+      deptName?: string
+      deptCode?: string
+    }
+    /** 部门列表项 */
+    interface DepartmentListItem {
+      id: number
+      parentId: number
+      deptName: string
+      deptCode: string
+      description?: string
+      status: string
+      createTime: string
+      updateTime: string
+      children: DepartmentListItem[]
+    }
+
+    /** 部门表单 */
+    interface DepartmentForm {
+      id?: number
+      parentId: number | undefined
+      deptName: string
+      parentId: number
+      deptCode: string
+      description: string
+    }
     /** 角色列表 */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>
 
+    /** 角色搜索参数 */
+    type RoleSearchParams = Partial<
+      Pick<RoleListItem, 'roleName' | 'deptName'> & Api.Common.CommonSearchParams
+    >
+
     /** 角色列表项 */
     interface RoleListItem {
-      roleId: number
+      id: number
       roleName: string
-      roleCode: string
-      description: string
-      enabled: boolean
+      deptId: number
+      deptName: string
+      remark: string
+      permissions: string
+      createTime: string
+      updateTime: string
+    }
+
+    /** 角色表单 */
+    interface RoleForm {
+      id?: number
+      roleName: string
+      deptId: number | undefined
+      remark: string
+      // permissions: string
+    }
+
+    /** 区域列表 */
+    type AreaList = Api.Common.PaginatedResponse<AreaListItem>
+
+    /** 区域列表项 */
+    interface AreaListItem {
+      id: number
+      areaName: string
+      deptName: string
+      deptId: number
+      length?: number
+      laneCount?: number
+      deviceCount: number
+      createTime: string
+      updateTime: string
+    }
+
+    /** 区域表单 */
+    interface AreaForm {
+      id?: number
+      areaName: string
+      deptId: number | undefined
+      deptName: string
+      length?: number
+      laneCount?: number
+    }
+
+    /** 区域搜索参数 */
+    type AreaSearchParams = Partial<
+      Pick<AreaListItem, 'areaName' | 'deptName'> & Api.Common.CommonSearchParams
+    >
+
+    /** 设备列表 */
+    type DeviceList = Api.Common.PaginatedResponse<DeviceListItem>
+
+    /** 设备类型 */
+    type DeviceType = import('@/enums/formEnum').DeviceTypeEnum
+
+    /** 设备状态 */
+    type DeviceStatus = import('@/enums/formEnum').DeviceStatusEnum
+
+    /** 设备列表项 */
+    interface DeviceListItem {
+      id: number
+      deviceName: string
+      deviceCode: string
+      deviceType: DeviceType
+      deviceTypeName?: string
+      model?: string
+      location?: string
+      ipAddress?: string
+      status: DeviceStatus
+      statusName?: string
+      areaId: number
+      areaName: string
+      createTime: string
+      updateTime: string
+      fileId: number
+      videoUrl: string
+      coordinate: [number, number] // [经度, 纬度]
+    }
+
+    /** 设备表单 */
+    interface DeviceForm {
+      id?: number
+      deviceName: string
+      deviceCode: string
+      deviceType: DeviceType
+      model?: string
+      location?: string
+      areaId: number
+      areaName: string
+      alarmRuleId: number | undefined
+    }
+
+    /** 设备搜索参数 */
+    type DeviceSearchParams = Partial<
+      Pick<DeviceListItem, 'deviceName' | 'deviceCode' | 'deviceType' | 'status' | 'areaId'> &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 区域设备列表项（用于设备监控树） */
+    interface AreaDeviceListItem extends AreaListItem {
+      deviceList: DeviceListItem[]
+    }
+
+    /** 设备监控树节点 */
+    interface DeviceMonitorNode {
+      id: string
+      label: string
+      type: 'folder' | 'device'
+      deviceType?: DeviceType
+      children?: DeviceMonitorNode[]
+      [key: string]: any
+    }
+  }
+
+  /** 危害检测模块类型 */
+
+  namespace Detect {
+    type EventStreamTypeEnum = import('@/enums/formEnum').EventStreamTypeEnum
+
+    type EventStreamList = Api.Common.PaginatedResponse<Api.Detect.EventStreamListItem>
+
+    /** 事件流搜索参数 */
+    type EventStreamSearchParams = Partial<
+      Pick<
+        EventStreamListItem,
+        | 'startTime'
+        | 'endTime'
+        | 'eventName'
+        | 'areaName'
+        | 'deviceId'
+        | 'deviceName'
+        | 'eventType'
+        | 'eventTypeName'
+      > &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 事件流列表项 */
+    interface EventStreamListItem {
+      id: number
+      eventName: string
+      eventType: EventStreamTypeEnum
+      confidence: number
+      createTime: string
+      areaId: number
+      deviceId: number
+      deviceName: string
+      location: string
+      areaName: string
+      eventTypeName: string
+    }
+  }
+
+  /** 告警模块类型 */
+
+  namespace Warning {
+    type EventStreamTypeEnum = import('@/enums/formEnum').EventStreamTypeEnum
+    type AlarmLevel = import('@/enums/formEnum').AlarmLevel
+    type AlarmStatus = import('@/enums/formEnum').AlarmStatus
+
+    type AlarmRuleList = Api.Common.PaginatedResponse<Api.Warning.AlarmRuleListItem>
+
+    /** 告警规则搜索参数 */
+    type AlarmRuleSearchParams = Partial<
+      Pick<AlarmRuleListItem, 'ruleName' | 'eventType' | 'alarmLevel' | 'isEnabled'> &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 告警规则列表项 */
+    interface AlarmRuleListItem {
+      id: number
+      ruleName: string
+      eventType: EventStreamTypeEnum
+      eventTypeName: string
+      matchCondition: Record<string, any>
+      alarmLevel: AlarmLevel
+      isEnabled: number
+      createTime: string
+      remark?: string
+    }
+
+    /** 告警规则表单 */
+    interface AlarmRuleForm {
+      id?: number
+      ruleName: string
+      eventType: EventStreamTypeEnum
+      matchCondition: {
+        confidence?: {
+          min?: number
+        }
+      }
+      alarmLevel: AlarmLevel
+      isEnabled: number
+      remark?: string
+    }
+
+    type AlarmMessageList = Api.Common.PaginatedResponse<Api.Warning.AlarmMessageListItem>
+
+    /** 告警消息搜索参数 */
+    type AlarmMessageSearchParams = Partial<
+      Pick<AlarmMessageListItem, 'alarmName' | 'alarmLevel' | 'eventType' | 'alarmStatus'> & {
+        startTime?: string
+        endTime?: string
+      } & Api.Common.CommonSearchParams
+    >
+
+    /** 告警消息列表项 */
+    interface AlarmMessageListItem {
+      id: number
+      alarmName: string
+      alarmLevel: AlarmLevel
+      eventType: EventStreamTypeEnum
+      deviceName: string
+      location: string
+      ruleName: string
+      createTime: string
+      updateTime: string
+      alarmStatus: AlarmStatus
+      closeTime?: string
+      closeReason?: string
+      processingResult?: string
+      confirmer?: string
+    }
+
+    /** 关闭告警参数 */
+    interface AlarmMessageCloseParams {
+      id: number
+      alarmStatus: AlarmStatus.CLOSED
+      closeReason?: string
+      processingResult?: string
+    }
+
+    /** 告警消息详情 */
+    interface AlarmMessageDetail extends AlarmMessageListItem {
+      deviceId: number
+      ruleId: number
+      confirmedBy?: number
+    }
+  }
+
+  namespace Emergency {
+    type AlarmLevel = import('@/enums/formEnum').AlarmLevel
+
+    /** 应急事件状态 */
+    type EmeEventStatus = import('@/enums/formEnum').EmeEventStatus
+
+    /** 应急事件类型 */
+    type DetectEventType = import('@/enums/formEnum').EventStreamTypeEnum
+
+    /** 事件时间轴类型 */
+    type TimelineType = import('@/enums/formEnum').TimelineType
+    /** 应急事件列表项 */
+    interface EventListItem {
+      id: number
+      eventName: string
+      eventLevel: AlarmLevel
+      eventType: DetectEventType
+      location: string
+      status: EmeEventStatus
+      receiverRoleId: number
+      alarmId: number
+      createTime: string
+      updateTime: string
+      deptId: number
+      deptName: string
+      eventLevelName: string
+      eventTypeName: string
+      statusName: string
+      receiverRoleName?: string
+    }
+
+    /** 时间线项 */
+    interface TimelineItem {
+      id: number
+      eventId: number
+      actionType: TimelineType
+      actionTypeName: string
+      actionText: string
+      departure?: string
+      destination?: string
+      operateTime: string
+      operateId: number
+      operatorName: string
+      remark?: string
       createTime: string
     }
 
-    /** 角色搜索参数 */
-    type RoleSearchParams = Partial<
-      Pick<RoleListItem, 'roleId' | 'roleName' | 'roleCode' | 'description' | 'enabled'> &
-        Api.Common.CommonSearchParams
-    >
+    /** 资源项 */
+    interface ResourceItem {
+      id: number
+      resourceName: string
+      num: number
+      createTime: string
+    }
+
+    /** 更新事件状态参数（统一接口） */
+    interface UpdateStatusParams {
+      eventId: number
+      actionType: ActionType
+      departure?: string
+      destination?: string
+      resourceIds?: number[]
+      receiverRoleId?: number
+      remark?: string
+    }
   }
 }

@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules/
+.npm/
+
+# Build output（重新构建，不需要 COPY）
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Dev files
+*.md
+docs/
+.husky/
+.vetur/
+.scalafmt*
+pyrightconfig.json
+# eslint 配置（开发用）
+eslint.config.mjs
+.prettierrc
+.stylelintrc.cjs
+commitlint.config.cjs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+*test*
+*.test*
+coverage/

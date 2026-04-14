@@ -6,74 +6,21 @@
       <h1 class="title">{{ AppConfig.systemInfo.name }}</h1>
     </div>
 
-    <div class="left-img">
+    <!-- <div class="left-img">
       <ThemeSvg :src="loginIcon" size="100%" />
-    </div>
+    </div> -->
 
-    <div class="text-wrap">
+    <!-- <div class="text-wrap">
       <h1> {{ $t('login.leftView.title') }} </h1>
       <p> {{ $t('login.leftView.subTitle') }} </p>
-    </div>
-
-    <!-- 几何装饰元素 -->
-    <div class="geometric-decorations">
-      <!-- 基础几何形状 -->
-      <div class="geo-element circle-outline animate-fade-in-up" style="animation-delay: 0s"></div>
-      <div
-        class="geo-element square-rotated animate-fade-in-left"
-        style="animation-delay: 0s"
-      ></div>
-      <div class="geo-element circle-small animate-fade-in-up" style="animation-delay: 0.3s"></div>
-
-      <div
-        class="geo-element square-bottom-right animate-fade-in-right"
-        style="animation-delay: 0s"
-      ></div>
-
-      <!-- 背景泡泡 -->
-      <div class="geo-element bg-bubble animate-scale-in" style="animation-delay: 0.5"></div>
-
-      <!-- 太阳/月亮 -->
-      <div
-        class="geo-element circle-top-right animate-fade-in-down"
-        style="animation-delay: 0.5"
-        @click="themeAnimation"
-      ></div>
-
-      <!-- 装饰点 -->
-      <div class="geo-element dot dot-top-left animate-bounce-in" style="animation-delay: 0s"></div>
-      <div
-        class="geo-element dot dot-top-right animate-bounce-in"
-        style="animation-delay: 0s"
-      ></div>
-      <div
-        class="geo-element dot dot-center-right animate-bounce-in"
-        style="animation-delay: 0s"
-      ></div>
-
-      <!-- 叠加方块组 -->
-      <div class="squares-group">
-        <i
-          class="geo-element square square-blue animate-fade-in-left-rotated-blue"
-          style="animation-delay: 0.2s"
-        ></i>
-        <i
-          class="geo-element square square-pink animate-fade-in-left-rotated-pink"
-          style="animation-delay: 0.4s"
-        ></i>
-        <i
-          class="geo-element square square-purple animate-fade-in-left-no-rotation"
-          style="animation-delay: 0.6s"
-        ></i>
-      </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup lang="ts">
   import AppConfig from '@/config'
-  import loginIcon from '@imgs/svg/login_icon.svg'
-  import { themeAnimation } from '@/utils/ui/animation'
+  // import loginIcon from '@imgs/svg/login_icon.svg'
+  // import { themeAnimation } from '@/utils/ui/animation'
 
   // 定义 props
   defineProps<{
@@ -101,7 +48,7 @@
     height: 100%;
     padding: 15px;
     overflow: hidden;
-    background-color: $bg-mix-light-9;
+    // background-color: $bg-mix-light-9;
 
     .logo {
       position: relative;
@@ -111,8 +58,9 @@
 
       .title {
         margin-left: 10px;
-        font-size: 20px;
+        font-size: 36px;
         font-weight: 400;
+        color: white;
       }
     }
 
@@ -513,7 +461,7 @@
 
   // 暗色主题
   .dark .login-left-view {
-    background-color: color-mix(in srgb, $primary-light-9 60%, #070707);
+    // background-color: color-mix(in srgb, $primary-light-9 60%, #070707);
 
     @media only screen and (width <= 1180px) {
       background: transparent;
